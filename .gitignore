@@ -1,0 +1,14 @@
+.vscode
+.mvn
+.camel-jbang
+target
+*.swp
+*.ks
+*.ts
+*.jks
+*.tmp
+tmp
+*.class
+*.jar
+jboss-eap-quickstarts
+

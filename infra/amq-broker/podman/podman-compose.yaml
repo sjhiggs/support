@@ -1,0 +1,28 @@
+version: '3.8'
+services:
+  amqp-demo-broker:
+    container_name: mybroker
+    hostname: mybroker
+    image: registry.redhat.io/amq7/amq-broker-rhel8:7.12.4-3
+    entrypoint: "/opt/amq/bin/launch-hacked.sh"
+    ports:
+      - "8161:8161"
+      - "61616:61616"
+      - "61617:61617"
+    volumes:
+      - ./broker/launch-hacked.sh:/opt/amq/bin/launch-hacked.sh:z
+      - ./broker/configure_custom_hook.sh:/opt/amq/bin/configure_custom_hook.sh:z
+      - ./broker/etc/:/opt/amq/custom/etc/:z
+      - ./broker/broker.properties:/opt/amq/custom/properties/broker.properties:z
+      - /tmp/ca-data/certs/myserver.p12:/opt/amq/custom/ssl/myserver.p12:z
+      - /tmp/ca-data/certs/truststore.p12:/opt/amq/custom/ssl/truststore.p12:z
+    environment:
+      AMQ_USER: "admin"
+      AMQ_PASSWORD: "admin"
+      AMQ_EXTRA_ARGS: "--no-autotune --no-mqtt-acceptor --no-stomp-acceptor --no-amqp-acceptor --no-hornetq-acceptor"
+      JAVA_OPTS: "-Dbroker.properties=/opt/amq/custom/properties/broker.properties"
+    networks:
+      - myamqnet
+networks:
+  myamqnet:
+    name: myamqnet

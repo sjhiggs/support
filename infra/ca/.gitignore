@@ -1,0 +1,7 @@
+ca/
+certs/
+env
+issuing/
+issuing_clients/
+.bak/
+*.swp

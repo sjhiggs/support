@@ -1,0 +1,137 @@
+diff --git a/helloworld-mdb/pom.xml b/helloworld-mdb/pom.xml
+index caa079d62..c45bd81c3 100644
+--- a/helloworld-mdb/pom.xml
++++ b/helloworld-mdb/pom.xml
+@@ -52,6 +52,10 @@
+             <artifactId>jboss-ejb-api_3.2_spec</artifactId>
+             <scope>provided</scope>
+         </dependency>
++	<dependency>
++	    <groupId>org.jboss.ejb3</groupId>
++	    <artifactId>jboss-ejb3-ext-api</artifactId>
++	</dependency>
+         <dependency>
+             <groupId>org.jboss.spec.javax.jms</groupId>
+             <artifactId>jboss-jms-api_2.0_spec</artifactId>
+diff --git a/helloworld-mdb/src/main/java/org/jboss/as/quickstarts/mdb/HelloWorldQueueMDB.java b/helloworld-mdb/src/main/java/org/jboss/as/quickstarts/mdb/HelloWorldQueueMDB.java
+index 560f22a0a..2c3430f49 100644
+--- a/helloworld-mdb/src/main/java/org/jboss/as/quickstarts/mdb/HelloWorldQueueMDB.java
++++ b/helloworld-mdb/src/main/java/org/jboss/as/quickstarts/mdb/HelloWorldQueueMDB.java
+@@ -16,6 +16,8 @@
+  */
+ package org.jboss.as.quickstarts.mdb;
+ 
++import org.jboss.ejb3.annotation.ResourceAdapter;
++
+ import java.util.logging.Logger;
+ import javax.ejb.ActivationConfigProperty;
+ import javax.ejb.MessageDriven;
+@@ -31,9 +33,12 @@ import javax.jms.TextMessage;
+  *
+  * @author Serge Pagop (spagop@redhat.com)
+  */
++@ResourceAdapter(value="RemoteConnectionFactory")
+ @MessageDriven(name = "HelloWorldQueueMDB", activationConfig = {
+         @ActivationConfigProperty(propertyName = "destinationLookup", propertyValue = "queue/HELLOWORLDMDBQueue"),
+         @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue"),
++        @ActivationConfigProperty(propertyName="user", propertyValue="admin"),
++        @ActivationConfigProperty(propertyName="password", propertyValue="admin"),
+         @ActivationConfigProperty(propertyName = "acknowledgeMode", propertyValue = "Auto-acknowledge")})
+ public class HelloWorldQueueMDB implements MessageListener {
+ 
+diff --git a/helloworld-mdb/src/main/java/org/jboss/as/quickstarts/mdb/HelloWorldTopicMDB.java b/helloworld-mdb/src/main/java/org/jboss/as/quickstarts/mdb/HelloWorldTopicMDB.java
+index acd7de34f..4cbb2b7d2 100644
+--- a/helloworld-mdb/src/main/java/org/jboss/as/quickstarts/mdb/HelloWorldTopicMDB.java
++++ b/helloworld-mdb/src/main/java/org/jboss/as/quickstarts/mdb/HelloWorldTopicMDB.java
+@@ -16,6 +16,8 @@
+  */
+ package org.jboss.as.quickstarts.mdb;
+ 
++import org.jboss.ejb3.annotation.ResourceAdapter;
++
+ import java.util.logging.Logger;
+ import javax.ejb.ActivationConfigProperty;
+ import javax.ejb.MessageDriven;
+@@ -31,9 +33,12 @@ import javax.jms.TextMessage;
+  *
+  * @author Serge Pagop (spagop@redhat.com)
+  */
++@ResourceAdapter(value="RemoteConnectionFactory")
+ @MessageDriven(name = "HelloWorldQTopicMDB", activationConfig = {
+         @ActivationConfigProperty(propertyName = "destinationLookup", propertyValue = "topic/HELLOWORLDMDBTopic"),
+         @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Topic"),
++        @ActivationConfigProperty(propertyName="user", propertyValue="admin"),
++        @ActivationConfigProperty(propertyName="password", propertyValue="admin"),
+         @ActivationConfigProperty(propertyName = "acknowledgeMode", propertyValue = "Auto-acknowledge")})
+ public class HelloWorldTopicMDB implements MessageListener {
+ 
+diff --git a/helloworld-mdb/src/main/java/org/jboss/as/quickstarts/servlet/HelloWorldMDBServletClient.java b/helloworld-mdb/src/main/java/org/jboss/as/quickstarts/servlet/HelloWorldMDBServletClient.java
+index 095d3097a..af5386589 100644
+--- a/helloworld-mdb/src/main/java/org/jboss/as/quickstarts/servlet/HelloWorldMDBServletClient.java
++++ b/helloworld-mdb/src/main/java/org/jboss/as/quickstarts/servlet/HelloWorldMDBServletClient.java
+@@ -21,8 +21,10 @@ import java.io.PrintWriter;
+ 
+ import javax.annotation.Resource;
+ import javax.inject.Inject;
++import javax.jms.ConnectionFactory;
+ import javax.jms.Destination;
+ import javax.jms.JMSContext;
++import javax.jms.JMSConnectionFactory;
+ import javax.jms.JMSDestinationDefinition;
+ import javax.jms.JMSDestinationDefinitions;
+ import javax.jms.Queue;
+@@ -33,24 +35,28 @@ import javax.servlet.http.HttpServlet;
+ import javax.servlet.http.HttpServletRequest;
+ import javax.servlet.http.HttpServletResponse;
+ 
+-/**
+- * Definition of the two JMS destinations used by the quickstart
+- * (one queue and one topic).
+- */
+-@JMSDestinationDefinitions(
++/*@JMSDestinationDefinitions(
+     value = {
+         @JMSDestinationDefinition(
+             name = "java:/queue/HELLOWORLDMDBQueue",
+             interfaceName = "javax.jms.Queue",
+-            destinationName = "HelloWorldMDBQueue"
++            destinationName = "HELLOWORLDMDBQueue",
++            properties = {
++               "enable-amq1-prefix=false"
++            }
+         ),
+         @JMSDestinationDefinition(
+             name = "java:/topic/HELLOWORLDMDBTopic",
+             interfaceName = "javax.jms.Topic",
+-            destinationName = "HelloWorldMDBTopic"
++            destinationName = "HELLOWORLDMDBTopic",
++            properties = {
++               "enable-amq1-prefix=false"
++            }
+         )
+     }
+-)
++)*/
++
++
+ 
+ /**
+  * <p>
+@@ -73,7 +79,8 @@ public class HelloWorldMDBServletClient extends HttpServlet {
+     private static final int MSG_COUNT = 5;
+ 
+     @Inject
+-    private JMSContext context;
++    @JMSConnectionFactory("java:/jboss/RemoteConnectionFactory")
++    JMSContext context;
+ 
+     @Resource(lookup = "java:/queue/HELLOWORLDMDBQueue")
+     private Queue queue;
+@@ -85,6 +92,7 @@ public class HelloWorldMDBServletClient extends HttpServlet {
+     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+         resp.setContentType("text/html");
+         PrintWriter out = resp.getWriter();
++
+         out.write("<h1>Quickstart: Example demonstrates the use of <strong>JMS 2.0</strong> and <strong>EJB 3.2 Message-Driven Bean</strong> in JBoss EAP.</h1>");
+         try {
+             boolean useTopic = req.getParameterMap().keySet().contains("topic");
