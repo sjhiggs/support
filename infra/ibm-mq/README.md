@@ -24,7 +24,7 @@ Requires jbang with camel
 Tested with Java 21 (uses jakarta package name). Run the route:
 
 ```
-$ camel run camel-mq-client/MQRoute.java
+$  camel run camel-mq-client/MQRoute.java --profile dev
 ```
 
 # Add custom queues to MQ podman image

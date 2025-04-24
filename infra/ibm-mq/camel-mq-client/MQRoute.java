@@ -7,13 +7,16 @@ import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.jms.JmsComponent;
 import org.apache.camel.impl.DefaultCamelContext;
 
+import org.apache.camel.PropertyInject;
+
 
 import org.apache.camel.BindToRegistry;
 
 
 public class MQRoute extends RouteBuilder {
 
-    static String mqHost = "127.0.0.1";
+    @PropertyInject("mq-host")
+    public String mqHost;
 
     static int mqPort = 1414;
     static String mqQueueManager = "QM1";

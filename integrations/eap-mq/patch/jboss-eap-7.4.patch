@@ -1,0 +1,228 @@
+From cff9861e653b6e01ca1b0b3ba13213e88a14a821 Mon Sep 17 00:00:00 2001
+From: Stephen Higgs <s.j.higgs@gmail.com>
+Date: Fri, 16 Jun 2023 18:01:48 -0400
+Subject: [PATCH] modified helloworld-mdb for ibm-mq
+
+---
+ helloworld-mdb/pom.xml                        |  6 ++
+ .../quickstarts/mdb/HelloWorldQueueMDB.java   | 29 ++++++----
+ .../quickstarts/mdb/HelloWorldTopicMDB.java   | 58 -------------------
+ .../servlet/HelloWorldMDBServletClient.java   | 42 +++-----------
+ 4 files changed, 34 insertions(+), 101 deletions(-)
+ delete mode 100644 helloworld-mdb/src/main/java/org/jboss/as/quickstarts/mdb/HelloWorldTopicMDB.java
+
+diff --git a/helloworld-mdb/pom.xml b/helloworld-mdb/pom.xml
+index caa079d62..7a877ec8a 100644
+--- a/helloworld-mdb/pom.xml
++++ b/helloworld-mdb/pom.xml
+@@ -69,6 +69,12 @@
+             <artifactId>jboss-annotations-api_1.3_spec</artifactId>
+             <scope>provided</scope>
+         </dependency>
++        <dependency>
++            <groupId>org.jboss.ejb3</groupId>
++            <artifactId>jboss-ejb3-ext-api</artifactId>
++            <version>2.1.0.redhat-1</version>
++            <scope>provided</scope>
++        </dependency>
+ 
+     </dependencies>
+ 
+diff --git a/helloworld-mdb/src/main/java/org/jboss/as/quickstarts/mdb/HelloWorldQueueMDB.java b/helloworld-mdb/src/main/java/org/jboss/as/quickstarts/mdb/HelloWorldQueueMDB.java
+index 560f22a0a..770ebff91 100644
+--- a/helloworld-mdb/src/main/java/org/jboss/as/quickstarts/mdb/HelloWorldQueueMDB.java
++++ b/helloworld-mdb/src/main/java/org/jboss/as/quickstarts/mdb/HelloWorldQueueMDB.java
+@@ -16,25 +16,33 @@
+  */
+ package org.jboss.as.quickstarts.mdb;
+ 
++//import java.util.Random;
++//import java.util.logging.Level;
+ import java.util.logging.Logger;
++
++//import javax.annotation.Resource;
+ import javax.ejb.ActivationConfigProperty;
+ import javax.ejb.MessageDriven;
++//import javax.ejb.MessageDrivenContext;
++//import javax.ejb.TransactionAttribute;
++//import javax.ejb.TransactionAttributeType;
+ import javax.jms.JMSException;
+ import javax.jms.Message;
+ import javax.jms.MessageListener;
++
+ import javax.jms.TextMessage;
+ 
+-/**
+- * <p>
+- * A simple Message Driven Bean that asynchronously receives and processes the messages that are sent to the queue.
+- * </p>
+- *
+- * @author Serge Pagop (spagop@redhat.com)
+- */
+-@MessageDriven(name = "HelloWorldQueueMDB", activationConfig = {
+-        @ActivationConfigProperty(propertyName = "destinationLookup", propertyValue = "queue/HELLOWORLDMDBQueue"),
++import org.jboss.ejb3.annotation.ResourceAdapter;
++
++@ResourceAdapter("wmq.jmsra.rar")
++@MessageDriven(name = "IbmMqMdb", activationConfig = {
++        @ActivationConfigProperty(propertyName = "connectionFactoryLookup", propertyValue = "java:jboss/my-ibm-mq-factory"),
++        @ActivationConfigProperty(propertyName="username", propertyValue="app"),
++        @ActivationConfigProperty(propertyName="password", propertyValue="foobar"),
++        @ActivationConfigProperty(propertyName = "useJNDI", propertyValue = "true"),
++        @ActivationConfigProperty(propertyName = "destinationLookup", propertyValue = "java:jboss/DEV.QUEUE.1"),
+         @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue"),
+-        @ActivationConfigProperty(propertyName = "acknowledgeMode", propertyValue = "Auto-acknowledge")})
++        @ActivationConfigProperty(propertyName = "acknowledgeMode", propertyValue = "Auto-acknowledge") })
+ public class HelloWorldQueueMDB implements MessageListener {
+ 
+     private static final Logger LOGGER = Logger.getLogger(HelloWorldQueueMDB.class.toString());
+@@ -42,6 +50,7 @@ public class HelloWorldQueueMDB implements MessageListener {
+     /**
+      * @see MessageListener#onMessage(Message)
+      */
++//    @TransactionAttribute(value = TransactionAttributeType.REQUIRED)
+     public void onMessage(Message rcvMessage) {
+         TextMessage msg = null;
+         try {
+diff --git a/helloworld-mdb/src/main/java/org/jboss/as/quickstarts/mdb/HelloWorldTopicMDB.java b/helloworld-mdb/src/main/java/org/jboss/as/quickstarts/mdb/HelloWorldTopicMDB.java
+deleted file mode 100644
+index acd7de34f..000000000
+--- a/helloworld-mdb/src/main/java/org/jboss/as/quickstarts/mdb/HelloWorldTopicMDB.java
++++ /dev/null
+@@ -1,58 +0,0 @@
+-/*
+- * JBoss, Home of Professional Open Source
+- * Copyright 2015, Red Hat, Inc. and/or its affiliates, and individual
+- * contributors by the @authors tag. See the copyright.txt in the
+- * distribution for a full listing of individual contributors.
+- *
+- * Licensed under the Apache License, Version 2.0 (the "License");
+- * you may not use this file except in compliance with the License.
+- * You may obtain a copy of the License at
+- * http://www.apache.org/licenses/LICENSE-2.0
+- * Unless required by applicable law or agreed to in writing, software
+- * distributed under the License is distributed on an "AS IS" BASIS,
+- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+- * See the License for the specific language governing permissions and
+- * limitations under the License.
+- */
+-package org.jboss.as.quickstarts.mdb;
+-
+-import java.util.logging.Logger;
+-import javax.ejb.ActivationConfigProperty;
+-import javax.ejb.MessageDriven;
+-import javax.jms.JMSException;
+-import javax.jms.Message;
+-import javax.jms.MessageListener;
+-import javax.jms.TextMessage;
+-
+-/**
+- * <p>
+- * A simple Message Driven Bean that asynchronously receives and processes the messages that are sent to the topic.
+- * </p>
+- *
+- * @author Serge Pagop (spagop@redhat.com)
+- */
+-@MessageDriven(name = "HelloWorldQTopicMDB", activationConfig = {
+-        @ActivationConfigProperty(propertyName = "destinationLookup", propertyValue = "topic/HELLOWORLDMDBTopic"),
+-        @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Topic"),
+-        @ActivationConfigProperty(propertyName = "acknowledgeMode", propertyValue = "Auto-acknowledge")})
+-public class HelloWorldTopicMDB implements MessageListener {
+-
+-    private static final Logger LOGGER = Logger.getLogger(HelloWorldTopicMDB.class.toString());
+-
+-    /**
+-     * @see MessageListener#onMessage(Message)
+-     */
+-    public void onMessage(Message rcvMessage) {
+-        TextMessage msg = null;
+-        try {
+-            if (rcvMessage instanceof TextMessage) {
+-                msg = (TextMessage) rcvMessage;
+-                LOGGER.info("Received Message from topic: " + msg.getText());
+-            } else {
+-                LOGGER.warning("Message of wrong type: " + rcvMessage.getClass().getName());
+-            }
+-        } catch (JMSException e) {
+-            throw new RuntimeException(e);
+-        }
+-    }
+-}
+diff --git a/helloworld-mdb/src/main/java/org/jboss/as/quickstarts/servlet/HelloWorldMDBServletClient.java b/helloworld-mdb/src/main/java/org/jboss/as/quickstarts/servlet/HelloWorldMDBServletClient.java
+index 095d3097a..9c52ca113 100644
+--- a/helloworld-mdb/src/main/java/org/jboss/as/quickstarts/servlet/HelloWorldMDBServletClient.java
++++ b/helloworld-mdb/src/main/java/org/jboss/as/quickstarts/servlet/HelloWorldMDBServletClient.java
+@@ -21,36 +21,14 @@ import java.io.PrintWriter;
+ 
+ import javax.annotation.Resource;
+ import javax.inject.Inject;
+-import javax.jms.Destination;
+-import javax.jms.JMSContext;
+-import javax.jms.JMSDestinationDefinition;
+-import javax.jms.JMSDestinationDefinitions;
+-import javax.jms.Queue;
+-import javax.jms.Topic;
++import javax.jms.*;
++//import javax.jms.Topic;
+ import javax.servlet.ServletException;
+ import javax.servlet.annotation.WebServlet;
+ import javax.servlet.http.HttpServlet;
+ import javax.servlet.http.HttpServletRequest;
+ import javax.servlet.http.HttpServletResponse;
+ 
+-/**
+- * Definition of the two JMS destinations used by the quickstart
+- * (one queue and one topic).
+- */
+-@JMSDestinationDefinitions(
+-    value = {
+-        @JMSDestinationDefinition(
+-            name = "java:/queue/HELLOWORLDMDBQueue",
+-            interfaceName = "javax.jms.Queue",
+-            destinationName = "HelloWorldMDBQueue"
+-        ),
+-        @JMSDestinationDefinition(
+-            name = "java:/topic/HELLOWORLDMDBTopic",
+-            interfaceName = "javax.jms.Topic",
+-            destinationName = "HelloWorldMDBTopic"
+-        )
+-    }
+-)
+ 
+ /**
+  * <p>
+@@ -72,24 +50,22 @@ public class HelloWorldMDBServletClient extends HttpServlet {
+ 
+     private static final int MSG_COUNT = 5;
+ 
+-    @Inject
+-    private JMSContext context;
++    @Resource(lookup = "java:jboss/my-ibm-mq-factory")
++    private ConnectionFactory factory;
+ 
+-    @Resource(lookup = "java:/queue/HELLOWORLDMDBQueue")
++    @Resource(lookup = "java:jboss/DEV.QUEUE.1")
+     private Queue queue;
+ 
+-    @Resource(lookup = "java:/topic/HELLOWORLDMDBTopic")
+-    private Topic topic;
+-
+     @Override
+     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+         resp.setContentType("text/html");
+         PrintWriter out = resp.getWriter();
+         out.write("<h1>Quickstart: Example demonstrates the use of <strong>JMS 2.0</strong> and <strong>EJB 3.2 Message-Driven Bean</strong> in JBoss EAP.</h1>");
+-        try {
+-            boolean useTopic = req.getParameterMap().keySet().contains("topic");
+-            final Destination destination = useTopic ? topic : queue;
+ 
++        JMSContext context = factory.createContext("app", "foobar", JMSContext.SESSION_TRANSACTED);
++
++        try {
++            final Destination destination = queue;
+             out.write("<p>Sending messages to <em>" + destination + "</em></p>");
+             out.write("<h2>The following messages will be sent to the destination:</h2>");
+             for (int i = 0; i < MSG_COUNT; i++) {
+-- 
+2.40.1
+
