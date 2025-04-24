@@ -1,0 +1,109 @@
+diff --git a/remote-helloworld-mdb/pom.xml b/remote-helloworld-mdb/pom.xml
+index 7a6f30b41..da545f4b5 100644
+--- a/remote-helloworld-mdb/pom.xml
++++ b/remote-helloworld-mdb/pom.xml
+@@ -135,6 +135,10 @@
+             <artifactId>jakarta.jms-api</artifactId>
+             <scope>provided</scope>
+         </dependency>
++        <dependency>
++            <groupId>org.jboss.ejb3</groupId>
++            <artifactId>jboss-ejb3-ext-api</artifactId>
++        </dependency>
+         <!-- Import the Servlet API, we use provided scope as the API is
+         included in JBoss EAP -->
+         <dependency>
+diff --git a/remote-helloworld-mdb/src/main/java/org/jboss/as/quickstarts/mdb/HelloWorldQueueMDB.java b/remote-helloworld-mdb/src/main/java/org/jboss/as/quickstarts/mdb/HelloWorldQueueMDB.java
+index 9b4e04865..c622ca319 100644
+--- a/remote-helloworld-mdb/src/main/java/org/jboss/as/quickstarts/mdb/HelloWorldQueueMDB.java
++++ b/remote-helloworld-mdb/src/main/java/org/jboss/as/quickstarts/mdb/HelloWorldQueueMDB.java
+@@ -24,6 +24,8 @@ import jakarta.jms.Message;
+ import jakarta.jms.MessageListener;
+ import jakarta.jms.TextMessage;
+ 
++import org.jboss.ejb3.annotation.ResourceAdapter;
++
+ /**
+  * <p>
+  * A simple Message Driven Bean that asynchronously receives and processes the messages that are sent to the queue.
+@@ -31,10 +33,12 @@ import jakarta.jms.TextMessage;
+  *
+  * @author Serge Pagop (spagop@redhat.com)
+  */
++@ResourceAdapter(value="RemoteConnectionFactory")
+ @MessageDriven(name = "HelloWorldQueueMDB", activationConfig = {
+         @ActivationConfigProperty(propertyName = "destinationLookup", propertyValue = "queue/HELLOWORLDMDBQueue"),
+         @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "jakarta.jms.Queue"),
+         @ActivationConfigProperty(propertyName = "acknowledgeMode", propertyValue = "Auto-acknowledge")})
++
+ public class HelloWorldQueueMDB implements MessageListener {
+ 
+     private static final Logger LOGGER = Logger.getLogger(HelloWorldQueueMDB.class.toString());
+diff --git a/remote-helloworld-mdb/src/main/java/org/jboss/as/quickstarts/mdb/HelloWorldTopicMDB.java b/remote-helloworld-mdb/src/main/java/org/jboss/as/quickstarts/mdb/HelloWorldTopicMDB.java
+index 21b34f09d..f2b621ada 100644
+--- a/remote-helloworld-mdb/src/main/java/org/jboss/as/quickstarts/mdb/HelloWorldTopicMDB.java
++++ b/remote-helloworld-mdb/src/main/java/org/jboss/as/quickstarts/mdb/HelloWorldTopicMDB.java
+@@ -23,6 +23,7 @@ import jakarta.jms.JMSException;
+ import jakarta.jms.Message;
+ import jakarta.jms.MessageListener;
+ import jakarta.jms.TextMessage;
++import org.jboss.ejb3.annotation.ResourceAdapter;
+ 
+ /**
+  * <p>
+@@ -31,6 +32,7 @@ import jakarta.jms.TextMessage;
+  *
+  * @author Serge Pagop (spagop@redhat.com)
+  */
++@ResourceAdapter(value="RemoteConnectionFactory")
+ @MessageDriven(name = "HelloWorldQTopicMDB", activationConfig = {
+         @ActivationConfigProperty(propertyName = "destinationLookup", propertyValue = "topic/HELLOWORLDMDBTopic"),
+         @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "jakarta.jms.Topic"),
+diff --git a/remote-helloworld-mdb/src/main/java/org/jboss/as/quickstarts/servlet/HelloWorldMDBServletClient.java b/remote-helloworld-mdb/src/main/java/org/jboss/as/quickstarts/servlet/HelloWorldMDBServletClient.java
+index 0b43de93f..cc321c1bd 100644
+--- a/remote-helloworld-mdb/src/main/java/org/jboss/as/quickstarts/servlet/HelloWorldMDBServletClient.java
++++ b/remote-helloworld-mdb/src/main/java/org/jboss/as/quickstarts/servlet/HelloWorldMDBServletClient.java
+@@ -22,6 +22,7 @@ import java.io.PrintWriter;
+ import jakarta.annotation.Resource;
+ import jakarta.inject.Inject;
+ import jakarta.jms.Destination;
++import jakarta.jms.JMSConnectionFactory;
+ import jakarta.jms.JMSContext;
+ import jakarta.jms.JMSDestinationDefinition;
+ import jakarta.jms.JMSDestinationDefinitions;
+@@ -33,27 +34,6 @@ import jakarta.servlet.http.HttpServlet;
+ import jakarta.servlet.http.HttpServletRequest;
+ import jakarta.servlet.http.HttpServletResponse;
+ 
+-/**
+- * Definition of the two JMS destinations used by the quickstart
+- * (one queue and one topic).
+- */
+-@JMSDestinationDefinitions(
+-    value = {
+-        @JMSDestinationDefinition(
+-            name = "java:/queue/HELLOWORLDMDBQueue",
+-            interfaceName = "jakarta.jms.Queue",
+-            destinationName = "HelloWorldMDBQueue",
+-            properties = {"enable-amq1-prefix=false"}
+-        ),
+-        @JMSDestinationDefinition(
+-            name = "java:/topic/HELLOWORLDMDBTopic",
+-            interfaceName = "jakarta.jms.Topic",
+-            destinationName = "HelloWorldMDBTopic",
+-            properties = {"enable-amq1-prefix=false"}
+-        )
+-    }
+-)
+-
+ /**
+  * A simple servlet as client that sends several messages to a queue or a topic.
+  * @author Emmanuel Hugonnet (c) 2023 Red Hat, Inc.
+@@ -66,6 +46,7 @@ public class HelloWorldMDBServletClient extends HttpServlet {
+     private static final int MSG_COUNT = 5;
+ 
+     @Inject
++    @JMSConnectionFactory("java:/jboss/RemoteConnectionFactory")
+     private transient JMSContext context;
+ 
+     @Resource(lookup = "java:/queue/HELLOWORLDMDBQueue")
