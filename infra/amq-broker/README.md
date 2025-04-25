@@ -49,7 +49,7 @@ camel run --source-dir=camel-amq-client --dep=camel-amqp --profile=plain
 camel run --source-dir=camel-amq-client --dep=camel-amqp --profile=ssl
 
 ### ssl with client auth
-
+camel run --source-dir=camel-amq-client --dep=camel-amqp --profile=client-auth
 
 
 
