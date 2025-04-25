@@ -1,0 +1,27 @@
+batch
+
+/subsystem=messaging-activemq/server=default:remove
+/subsystem=ee/service=default-bindings:undefine-attribute(name=jms-connection-factory)
+
+/subsystem=resource-adapters/resource-adapter=wmq.jakarta.jmsra.rar:add(archive=wmq.jakarta.jmsra.rar, transaction-support=XATransaction)
+/subsystem=resource-adapters/resource-adapter=wmq.jakarta.jmsra.rar/admin-objects=queue-ao:add(class-name=com.ibm.mq.jakarta.connector.outbound.MQQueueProxy, jndi-name=java:jboss/DEV.QUEUE.1)
+/subsystem=resource-adapters/resource-adapter=wmq.jakarta.jmsra.rar/admin-objects=queue-ao/config-properties=baseQueueName:add(value=DEV.QUEUE.1)
+/subsystem=resource-adapters/resource-adapter=wmq.jakarta.jmsra.rar/admin-objects=queue-ao/config-properties=baseQueueManagerName:add(value=QM1)
+/subsystem=resource-adapters/resource-adapter=wmq.jakarta.jmsra.rar/connection-definitions=mq-cd:add(class-name=com.ibm.mq.jakarta.connector.outbound.ManagedConnectionFactoryImpl, jndi-name=java:jboss/my-ibm-mq-factory, tracking=false)
+/subsystem=resource-adapters/resource-adapter=wmq.jakarta.jmsra.rar/connection-definitions=mq-cd/config-properties=hostName:add(value=127.0.0.1)
+/subsystem=resource-adapters/resource-adapter=wmq.jakarta.jmsra.rar/connection-definitions=mq-cd/config-properties=port:add(value=1414)
+/subsystem=resource-adapters/resource-adapter=wmq.jakarta.jmsra.rar/connection-definitions=mq-cd/config-properties=channel:add(value=DEV.APP.SVRCONN)
+/subsystem=resource-adapters/resource-adapter=wmq.jakarta.jmsra.rar/connection-definitions=mq-cd/config-properties=transportType:add(value=CLIENT)
+/subsystem=resource-adapters/resource-adapter=wmq.jakarta.jmsra.rar/connection-definitions=mq-cd/config-properties=queueManager:add(value=QM1)
+/subsystem=resource-adapters/resource-adapter=wmq.jakarta.jmsra.rar/connection-definitions=mq-cd:write-attribute(name=elytron-enabled,value=true)
+/subsystem=resource-adapters/resource-adapter=wmq.jakarta.jmsra.rar/connection-definitions=mq-cd:write-attribute(name=authentication-context,value=wmq-auth-context)
+
+/subsystem=elytron/authentication-configuration=wmq-auth-config:add(authentication-name=app,realm=ApplicationRealm,credential-reference={clear-text=foobar})
+/subsystem=elytron/authentication-context=wmq-auth-context:add(match-rules=[{authentication-configuration=wmq-auth-config}])
+
+/subsystem=ejb3:write-attribute(name=default-resource-adapter-name, value=wmq.jakarta.jmsra.rar)
+
+/subsystem=resource-adapters/resource-adapter=wmq.jakarta.jmsra.rar:activate()
+
+run-batch
+reload
