@@ -10,10 +10,10 @@ services:
       - "61616:61616"
       - "61617:61617"
     volumes:
-      - ./broker/launch-hacked.sh:/opt/amq/bin/launch-hacked.sh:z
-      - ./broker/configure_custom_hook.sh:/opt/amq/bin/configure_custom_hook.sh:z
-      - ./broker/etc/:/opt/amq/custom/etc/:z
-      - ./broker/broker.properties:/opt/amq/custom/properties/broker.properties:z
+      - ./scripts/launch-hacked.sh:/opt/amq/bin/launch-hacked.sh:z
+      - ./scripts/configure_custom_hook.sh:/opt/amq/bin/configure_custom_hook.sh:z
+      - ./config-ssl/etc/:/opt/amq/custom/etc/:z
+      - ./config-ssl/broker.properties:/opt/amq/custom/properties/broker.properties:z
       - /tmp/ca-data/certs/myserver.p12:/opt/amq/custom/ssl/myserver.p12:z
       - /tmp/ca-data/certs/truststore.p12:/opt/amq/custom/ssl/truststore.p12:z
     environment:

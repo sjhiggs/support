@@ -23,9 +23,13 @@ chmod -R a+r /tmp/ca-data
 ```
 
 ## Run podman
+
+### Plain/SSL with Dual Auth
+
+Starts broker with plain and ssl acceptors, client cert authentication and plain auth:
+
 ```
-cd podman
-podman-compose up
+$ cat podman/podman-compose-plain-ssl-dual-auth.yaml | podman-compose -f- down
 ```
 
 
