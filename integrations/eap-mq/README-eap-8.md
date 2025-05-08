@@ -55,7 +55,7 @@ $EAP_HOME/bin/domain.sh
 
 ## Deploy rar and configure EAP
 
-Deploy the rar to servers in the "main-server-group" (default is a single server, server-one)
+Deploy the rar to servers in the "main-server-group" (default is a two servers, server-one and server-two)
 ```
 export EAP_HOME=/redhat/eap/jboss-eap-8.0
 export CONTAINER_NAME=QM1
