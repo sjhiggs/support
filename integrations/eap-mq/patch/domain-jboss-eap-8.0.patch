@@ -1,0 +1,38 @@
+diff --git a/remote-helloworld-mdb/pom.xml b/remote-helloworld-mdb/pom.xml
+index 7a6f30b41..cfdb1acd3 100644
+--- a/remote-helloworld-mdb/pom.xml
++++ b/remote-helloworld-mdb/pom.xml
+@@ -178,6 +178,21 @@
+         </dependency>
+     </dependencies>
+ 
++
++    <build>
++        <plugins>
++            <plugin>
++                <groupId>org.wildfly.plugins</groupId>
++                <artifactId>wildfly-maven-plugin</artifactId>
++                <configuration>
++                    <server-groups>
++                        <server-group>main-server-group</server-group>
++                    </server-groups>
++                </configuration>
++            </plugin>
++        </plugins>
++    </build>
++
+     <profiles>
+         <profile>
+             <id>openshift</id>
+@@ -188,6 +203,11 @@
+                         <artifactId>eap-maven-plugin</artifactId>
+                         <version>${version.eap.maven.plugin}</version>
+                         <configuration>
++                            <domain>
++                                <server-groups>
++                                    <server-group>primary</server-group>
++                                </server-groups>
++                            </domain>
+                             <channels>
+                                 <channel>
+                                     <manifest>
