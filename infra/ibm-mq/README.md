@@ -57,8 +57,7 @@ chmod -R a+r /tmp/ca-data
 
 ```
 podman pull icr.io/ibm-messaging/mq:latest
-podman volume create qm1data
-podman run --env LICENSE=accept --env MQ_QMGR_NAME=QM1 --volume --volume qm1data:/mnt/mqm --publish 1414:1414 --publish 9443:9443 --detach --env MQ_APP_PASSWORD=foobar --env MQ_ADMIN_PASSWORD=passw0rd --name QM1 icr.io/ibm-messaging/mq:latest
+cat podman/podman-compose-plain-ssl-dual-auth.yaml | podman-compose -f- up
 ```
 
 ## Configure a channel auth record for the SSL cert, maps certs with CN=app to user app.
@@ -73,4 +72,11 @@ Tested with Java 21 (uses jakarta package name). Run the route:
 
 ```
 JDK_JAVA_OPTIONS="-Djavax.net.ssl.trustStore=/tmp/ca-data/certs/truststore.p12 -Djavax.net.ssl.trustStorePassword=foobar -Djavax.net.ssl.keyStore=/tmp/ca-data/certs/app.p12 -Djavax.net.ssl.keyStorePassword=foobar" camel run camel-mq-client/MQRoute.java --dep=com.ibm.mq:com.ibm.mq.jakarta.client:9.4.2.0 --profile dev-ssl
+```
+
+
+## Clean up
+
+```
+cat podman/podman-compose-plain-ssl-dual-auth.yaml | podman-compose -f- down -v
 ```
