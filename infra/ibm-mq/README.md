@@ -24,7 +24,7 @@ Requires jbang with camel
 Tested with Java 21 (uses jakarta package name). Run the route:
 
 ```
-$  camel run camel-mq-client/MQRoute.java --profile=dev --dep=com.ibm.mq:com.ibm.mq.jakarta.client:9.4.2.0
+$  camel run camel-mq-client/MQRoute.java --dep=com.ibm.mq:com.ibm.mq.jakarta.client:9.4.2.0 camel-mq-client/MQRoute.java camel-mq-client/MQRoute.properties
 ```
 
 
@@ -71,8 +71,7 @@ Requires jbang with camel
 Tested with Java 21 (uses jakarta package name). Run the route:
 
 ```
-JDK_JAVA_OPTIONS="-Djavax.net.ssl.trustStore=/tmp/ca-data/certs/truststore.p12 -Djavax.net.ssl.trustStorePassword=foobar -Djavax.net.ssl.keyStore=/tmp/ca-data/certs/app.p12 -Djavax.net.ssl.keyStorePassword=foobar" camel run camel-mq-client/MQRoute.java --dep=com.ibm.mq:com.ibm.mq.jakarta.client:9.4.2.0 --profile dev-ssl
-```
+JDK_JAVA_OPTIONS="-Djavax.net.ssl.trustStore=/tmp/ca-data/certs/truststore.p12 -Djavax.net.ssl.trustStorePassword=foobar -Djavax.net.ssl.keyStore=/tmp/ca-data/certs/app.p12 -Djavax.net.ssl.keyStorePassword=foobar" camel run --dep=com.ibm.mq:com.ibm.mq.jakarta.client:9.4.2.0 camel-mq-client/MQRoute.java camel-mq-client/MQRoute-ssl.properties
 
 
 ## Clean up
