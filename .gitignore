@@ -11,4 +11,4 @@ tmp
 *.class
 *.jar
 jboss-eap-quickstarts
-
+.quarkus

@@ -1,0 +1,27 @@
+version: '3.8'
+services:
+ ibm-mq-demo-broker:
+    container_name: QM1
+    hostname: QM1
+    image: icr.io/ibm-messaging/mq:latest
+    ports:
+      - "1414:1414"
+      - "9443:9443"
+    volumes:
+      - qm1data:/mnt/mqm
+      - /tmp/ca-data/certs/myserver.key.decrypted:/etc/mqm/pki/keys/mykey/tls.key:z
+      - /tmp/ca-data/certs/myserver.pem:/etc/mqm/pki/keys/mykey/tls.crt:z
+      - /tmp/ca-data/ca/ca.pem:/etc/mqm/pki/keys/mykey/ca.crt:z
+      - /tmp/ca-data/issuing/ca.issuing.pem:/etc/mqm/pki/keys/mykey/issuing.crt:z
+    environment:
+      LICENSE: accept
+      MQ_QMGR_NAME: QM1
+      MQ_APP_PASSWORD: foobar
+      MQ_ADMIN_PASSWORD: passw0rd
+    networks:
+      - mynet
+networks:
+  mynet:
+    name: mynet
+volumes:
+  qm1data:
