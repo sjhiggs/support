@@ -23,5 +23,6 @@ batch
 
 /profile=full/subsystem=resource-adapters/resource-adapter=wmq.jakarta.jmsra.rar:activate()
 
+
 run-batch
 reload --host=primary

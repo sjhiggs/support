@@ -1,0 +1,13 @@
+diff --git a/remote-helloworld-mdb/src/main/java/org/jboss/as/quickstarts/mdb/HelloWorldQueueMDB.java b/remote-helloworld-mdb/src/main/java/org/jboss/as/quickstarts/mdb/HelloWorldQueueMDB.java
+index d2dd70fe8..f544f9a70 100644
+--- a/remote-helloworld-mdb/src/main/java/org/jboss/as/quickstarts/mdb/HelloWorldQueueMDB.java
++++ b/remote-helloworld-mdb/src/main/java/org/jboss/as/quickstarts/mdb/HelloWorldQueueMDB.java
+@@ -37,8 +37,6 @@ import org.jboss.ejb3.annotation.ResourceAdapter;
+ @ResourceAdapter("wmq.jakarta.jmsra.rar")
+ @MessageDriven(name = "IbmMqMdb", activationConfig = {
+         @ActivationConfigProperty(propertyName = "connectionFactoryLookup", propertyValue = "java:jboss/my-ibm-mq-factory"),
+-        @ActivationConfigProperty(propertyName="username", propertyValue="app"),
+-        @ActivationConfigProperty(propertyName="password", propertyValue="foobar"),
+         @ActivationConfigProperty(propertyName = "useJNDI", propertyValue = "true"),
+         @ActivationConfigProperty(propertyName = "destinationLookup", propertyValue = "java:jboss/DEV.QUEUE.1"),
+         @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "jakarta.jms.Queue"),

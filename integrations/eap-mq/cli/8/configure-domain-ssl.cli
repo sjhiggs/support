@@ -1,0 +1,13 @@
+
+batch
+
+/profile=full/subsystem=resource-adapters/resource-adapter=wmq.jakarta.jmsra.rar/connection-definitions=mq-cd/config-properties=sslCipherSuite:add(value=*TLS12)
+
+/server-group=main-server-group/system-property=com.ibm.mq.cfg.useIBMCipherMappings:add(value=false)
+/server-group=main-server-group/system-property=javax.net.ssl.trustStore:add(value=/tmp/ca-data/certs/truststore.p12)
+/server-group=main-server-group/system-property=javax.net.ssl.trustStorePassword:add(value=foobar)
+/server-group=main-server-group/system-property=javax.net.ssl.keyStore:add(value=/tmp/ca-data/certs/app.p12)
+/server-group=main-server-group/system-property=javax.net.ssl.keyStorePassword:add(value=foobar)
+
+run-batch
+reload --host=primary
