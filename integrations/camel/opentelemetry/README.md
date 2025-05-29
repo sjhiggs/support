@@ -24,8 +24,10 @@ JDK_JAVA_OPTIONS="-javaagent:/tmp/opentelemetry/opentelemetry-javaagent.jar -Dot
 ```
 
 
-Elasticsaerch instead:
-https://medium.com/@davidsilwal/implementing-production-ready-observability-with-elastic-stack-and-opentelemetry-collector-4924b842fe48
+Use opentelemetry+elasticsaerch instead:
+
+Credit for podman environment install: https://medium.com/@davidsilwal/implementing-production-ready-observability-with-elastic-stack-and-opentelemetry-collector-4924b842fe48
+
 ```
 podman pull elasticsearch:9.0.1
 podman run -d --name elasticsearch --memory 2048m  -p 9200:9200 -p 9300:9300  -e "discovery.type=single-node"  -e "xpack.security.enabled=false"  elasticsearch:9.0.1
