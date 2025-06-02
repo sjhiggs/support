@@ -1,0 +1,3 @@
+
+```
+oc new-project west

@@ -1,0 +1,37 @@
+apiVersion: kafka.strimzi.io/v1beta2
+kind: Kafka
+metadata:
+  name: east
+spec:
+  kafka:
+    config:
+      offsets.topic.replication.factor: 1
+      transaction.state.log.replication.factor: 1
+      transaction.state.log.min.isr: 1
+      default.replication.factor: 1
+      min.insync.replicas: 1
+      log.roll.ms: 60000
+    storage:
+      type: ephemeral
+    listeners:
+      - name: plain
+        port: 9092
+        type: internal 
+        tls: false
+      - name: tls
+        port: 9093
+        type: internal 
+        tls: true
+    replicas: 1
+  entityOperator:
+    topicOperator: {}
+    userOperator: {}
+  zookeeper:
+    storage:
+      type: ephemeral
+    replicas: 1
+  clusterCa:
+    renewalDays: 1
+    validityDays: 2
+    generateCertificateAuthority: true
+

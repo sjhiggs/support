@@ -1,0 +1,41 @@
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaMirrorMaker2
+metadata:
+  name: my-mm2-cluster
+  namespace: east
+spec:
+  clusters:
+    - alias: west
+      bootstrapServers: 'west-kafka-tls-bootstrap-west.apps-crc.testing:443'
+      tls:
+        trustedCertificates:
+          - secretName: west-cluster-ca-cert
+            pattern: "*.crt"
+    - alias: east
+      bootstrapServers: 'east-kafka-brokers:9093'
+      tls:
+        trustedCertificates:
+          - secretName: east-cluster-ca-cert
+            pattern: "*.crt"
+      config:
+        config.storage.replication.factor: -1
+        offset.storage.replication.factor: -1
+        status.storage.replication.factor: -1
+  connectCluster: east
+  logging:
+    type: inline
+  mirrors:
+    - checkpointConnector:
+        config:
+          checkpoints.topic.replication.factor: -1
+      groupsPattern: .*
+      sourceCluster: west
+      sourceConnector:
+        config:
+          offset-syncs.topic.replication.factor: -1
+          replication.factor: -1
+          sync.topic.acls.enabled: 'false'
+      targetCluster: east
+      topicsPattern: .*
+  replicas: 1
+  #version: 3.9.0
