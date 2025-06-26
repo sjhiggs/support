@@ -31,9 +31,15 @@ openssl pkcs12 -export -name myServer -noiter -nomaciter -in /tmp/ca-data/certs/
 
 ## Client Test
 
+Allow alice permissions "create/read/write" on the foo topic
+
 ```
-$KAFKA_DIR/bin/kafka-console-producer.sh --bootstrap-server=127.0.0.1:9090,127.0.0.1:9091,127.0.0.1:9092 --producer.config ./config/kraft-dual-tls-sasl/client.properties --topic foo
-$KAFKA_DIR/bin/kafka-console-consumer.sh --bootstrap-server=127.0.0.1:9090,127.0.0.1:9091,127.0.0.1:9092 --consumer.config ./config/kraft-dual-tls-sasl/client.properties --topic foo --from-beginning
+$KAFKA_DIR/bin/kafka-acls.sh --bootstrap-server 127.0.0.1:9090 --add --allow-principal User:alice --operation Read --operation Write --operation Create --topic foo --command-config config/kraft-dual-tls-sasl/admin.properties
+```
+
+```
+$KAFKA_DIR/bin/kafka-console-producer.sh --bootstrap-server=127.0.0.1:9090,127.0.0.1:9091,127.0.0.1:9092 --producer.config ./config/kraft-dual-tls-sasl/user.properties --topic foo
+$KAFKA_DIR/bin/kafka-console-consumer.sh --bootstrap-server=127.0.0.1:9090,127.0.0.1:9091,127.0.0.1:9092 --consumer.config ./config/kraft-dual-tls-sasl/user.properties --topic foo --from-beginning
 ```
 
 ## Shut down
