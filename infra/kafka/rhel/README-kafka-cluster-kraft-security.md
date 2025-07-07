@@ -6,6 +6,10 @@
 Use the "ca" project to initialize a new CA, Issuing CA, and broker certs:
 
 ```
+./scripts/get-kafka.sh --kafka-version=3.9.0
+```
+
+```
 mkdir /tmp/ca-data
 ../../ca/scripts/create.sh
 ../../ca/scripts/cert-server.sh --cn=myserver --subject-alt-name="IP:127.0.0.1,DNS:localhost"
@@ -26,6 +30,21 @@ openssl pkcs12 -export -name myServer -noiter -nomaciter -in /tmp/ca-data/certs/
 
 ```
  ./scripts/start-cluster-kraft-dual-tls-sasl.sh
+```
+
+## Add quorum members
+
+```
+$KAFKA_DIR/bin/kafka-metadata-quorum.sh --bootstrap-controller 127.0.0.1:10090,127.0.0.1:10091,127.0.0.1:10092 --command-config config/kraft-dual-tls-sasl/admin.properties describe --re --hu
+```
+
+```
+$KAFKA_DIR/bin/kafka-metadata-quorum.sh --bootstrap-controller 127.0.0.1:10090  --command-config config/kraft-dual-tls-sasl/server-1.properties add-controller 
+$KAFKA_DIR/bin/kafka-metadata-quorum.sh --bootstrap-controller 127.0.0.1:10090  --command-config config/kraft-dual-tls-sasl/server-2.properties add-controller 
+```
+
+```
+$KAFKA_DIR/bin/kafka-metadata-quorum.sh --bootstrap-controller 127.0.0.1:10090,127.0.0.1:10091,127.0.0.1:10092 --command-config config/kraft-dual-tls-sasl/admin.properties describe --re --hu
 ```
 
 

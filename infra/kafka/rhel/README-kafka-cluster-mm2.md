@@ -6,6 +6,7 @@
 export KAFKA_DIR=/tmp/kafka-3.9.0
 ```
 
+<<<<<<< Updated upstream
 Start Cluster A and B (also, see scripts dir)
 ```
 LOG_DIR=/tmp/zookeeper-0/logs $KAFKA_DIR/bin/zookeeper-server-start.sh -daemon ./config/cluster-a/zookeeper-0.properties
@@ -20,23 +21,14 @@ LOG_DIR=/tmp/kafka-5/logs $KAFKA_DIR/bin/kafka-server-start.sh -daemon ./config/
 ```
 
 ## Shut Down, Clear Data
+=======
+Start Cluster west and est (also, see scripts dir)
+>>>>>>> Stashed changes
 
 ```
-pkill -f "server-0.properties"
-pkill -f "server-1.properties"
-pkill -f "server-2.properties"
-pkill -f "zookeeper-0.properties"
-
-pkill -f "server-3.properties"
-pkill -f "server-4.properties"
-pkill -f "server-5.properties"
-pkill -f "zookeeper-1.properties"
-
-eval rm -rf /tmp/kafka-{0..5}
-eval rm -rf /tmp/zookeeper-{0..1}
 ```
 
-# Mirrormaker test
+# Simple Mirrormaker test
 
 ```
 $KAFKA_DIR/bin/kafka-topics.sh --bootstrap-server localhost:9090 --create --config min.insync.replicas=2 --replication-factor=3 --topic=foo
