@@ -46,7 +46,7 @@ EOF
 ```
 
 
-# Test client (requires Kafka binaries on local machine)
+## Test client (requires Kafka binaries on local machine)
 
 Use the local client configuration and test producing and consuming from topic.
 
