@@ -63,6 +63,8 @@ $KAFKA_DIR/bin/kafka-acls.sh --bootstrap-server 127.0.0.1:11090 --add --allow-pr
 ```
 
 ```
+
+$KAFKA_DIR/bin/kafka-topics.sh --bootstrap-server 127.0.0.1:11090  --create --topic foo --partitions 3 --replication-factor 3 --command-config ./config/kraft-dual-tls-sasl/alice.properties
 $KAFKA_DIR/bin/kafka-console-producer.sh --bootstrap-server=127.0.0.1:11090,127.0.0.1:11091,127.0.0.1:11092 --producer.config ./config/kraft-dual-tls-sasl/alice.properties --topic foo
 $KAFKA_DIR/bin/kafka-console-consumer.sh --bootstrap-server=127.0.0.1:11090,127.0.0.1:11091,127.0.0.1:11092 --consumer.config ./config/kraft-dual-tls-sasl/alice.properties --topic foo --group foo-consumer-group --from-beginning
 ```
