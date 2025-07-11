@@ -6,7 +6,7 @@
 Use the "ca" project to initialize a new CA, Issuing CA, and broker certs:
 
 ```
-./scripts/get-kafka.sh --kafka-version=3.9.0
+./scripts/kafka-get.sh --kafka-version=3.9.0
 ```
 
 ```
@@ -29,13 +29,14 @@ openssl pkcs12 -export -name myServer -noiter -nomaciter -in /tmp/ca-data/certs/
 
 
 ```
- ./scripts/start-cluster-kraft-dual-tls-sasl.sh
+./scripts/init-kraft-dual-tls-sasl.sh
+./scripts/start-cluster-kraft-dual-tls-sasl.sh
 ```
 
 ## Add quorum members
 
 ```
-$KAFKA_DIR/bin/kafka-metadata-quorum.sh --bootstrap-controller 127.0.0.1:10090,127.0.0.1:10091,127.0.0.1:10092 --command-config config/kraft-dual-tls-sasl/admin.properties describe --re --hu
+$KAFKA_DIR/bin/kafka-metadata-quorum.sh --bootstrap-controller 127.0.0.1:10090,127.0.0.1:10091,127.0.0.1:10092 --command-config config/kraft-dual-tls-sasl/controller-admin.properties describe --re --hu
 ```
 
 ```
@@ -44,21 +45,26 @@ $KAFKA_DIR/bin/kafka-metadata-quorum.sh --bootstrap-controller 127.0.0.1:10090  
 ```
 
 ```
-$KAFKA_DIR/bin/kafka-metadata-quorum.sh --bootstrap-controller 127.0.0.1:10090,127.0.0.1:10091,127.0.0.1:10092 --command-config config/kraft-dual-tls-sasl/admin.properties describe --re --hu
+$KAFKA_DIR/bin/kafka-metadata-quorum.sh --bootstrap-controller 127.0.0.1:10090,127.0.0.1:10091,127.0.0.1:10092 --command-config config/kraft-dual-tls-sasl/controller-admin.properties describe --re --hu
 ```
 
 
 ## Client Test
 
+Add SCRAM-SHA-512 auth for user alice, using the admin login to the clients port
+```
+$KAFKA_DIR/bin/kafka-configs.sh --bootstrap-server localhost:11090 --alter --add-config 'SCRAM-SHA-512=[password=alice-secret]'  --entity-type users  --entity-name alice --command-config config/kraft-dual-tls-sasl/admin.properties
+```
+
 Allow alice permissions "create/read/write" on the foo topic
+```
+$KAFKA_DIR/bin/kafka-acls.sh --bootstrap-server 127.0.0.1:11090 --add --allow-principal User:alice --operation Read --operation Write --operation Create --topic foo --command-config config/kraft-dual-tls-sasl/admin.properties
+$KAFKA_DIR/bin/kafka-acls.sh --bootstrap-server 127.0.0.1:11090 --add --allow-principal User:alice --operation Read --group foo-consumer-group --command-config config/kraft-dual-tls-sasl/admin.properties
+```
 
 ```
-$KAFKA_DIR/bin/kafka-acls.sh --bootstrap-server 127.0.0.1:9090 --add --allow-principal User:alice --operation Read --operation Write --operation Create --topic foo --command-config config/kraft-dual-tls-sasl/admin.properties
-```
-
-```
-$KAFKA_DIR/bin/kafka-console-producer.sh --bootstrap-server=127.0.0.1:9090,127.0.0.1:9091,127.0.0.1:9092 --producer.config ./config/kraft-dual-tls-sasl/user.properties --topic foo
-$KAFKA_DIR/bin/kafka-console-consumer.sh --bootstrap-server=127.0.0.1:9090,127.0.0.1:9091,127.0.0.1:9092 --consumer.config ./config/kraft-dual-tls-sasl/user.properties --topic foo --from-beginning
+$KAFKA_DIR/bin/kafka-console-producer.sh --bootstrap-server=127.0.0.1:11090,127.0.0.1:11091,127.0.0.1:11092 --producer.config ./config/kraft-dual-tls-sasl/alice.properties --topic foo
+$KAFKA_DIR/bin/kafka-console-consumer.sh --bootstrap-server=127.0.0.1:11090,127.0.0.1:11091,127.0.0.1:11092 --consumer.config ./config/kraft-dual-tls-sasl/alice.properties --topic foo --group foo-consumer-group --from-beginning
 ```
 
 ## Shut down
