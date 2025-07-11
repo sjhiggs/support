@@ -25,7 +25,7 @@ keytool -import -file /tmp/ca-data/ca/ca.pem  -keystore /tmp/ca-data/certs/trust
 openssl pkcs12 -export -name myServer -noiter -nomaciter -in /tmp/ca-data/certs/myserver.combined.pem -inkey /tmp/ca-data/certs/myserver.key -out /tmp/ca-data/certs/myserver.p12 -passin pass:foobar -passout pass:foobar
 ```
 
-## Start with TLS and SCRAM-SHA-512 for everything
+## Start with TLS, PLAIN for controller listener and  SCRAM-SHA-512 for everything else
 
 
 ```
