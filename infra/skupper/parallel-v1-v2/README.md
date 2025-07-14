@@ -9,7 +9,7 @@ oc new-project skupper-operator-v1
 oc create -f yaml/subscription-skupper-operator-v1.yaml
 
 oc new-project skupper-operator-v2
-oc create -f yaml/operator-subscriptions/subscription-skupper-operator-v2.yaml
+oc create -f yaml/subscription-skupper-operator-v2.yaml
 ```
 
 ## v1 on the east/west namespaces
