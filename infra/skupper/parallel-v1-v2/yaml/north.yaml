@@ -1,0 +1,45 @@
+apiVersion: skupper.io/v2alpha1
+kind: Site
+metadata:
+  name: north
+  namespace: north
+spec:
+  linkAccess: default
+
+---
+
+apiVersion: skupper.io/v2alpha1
+kind: Listener
+metadata:
+  name: backend
+  namespace: north
+spec:
+  port: 8080
+  host: backend
+  routingKey: backend
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend
+  labels:
+    app: frontend
+  namespace: north
+spec:
+  selector:
+    matchLabels:
+      app: frontend
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: frontend
+    spec:
+      containers:
+        - name: frontend
+          image: quay.io/skupper/hello-world-frontend
+          ports:
+            - containerPort: 8080
+

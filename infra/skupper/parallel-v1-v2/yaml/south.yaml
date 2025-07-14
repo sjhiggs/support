@@ -1,0 +1,43 @@
+apiVersion: skupper.io/v2alpha1
+kind: Site
+metadata:
+  name: south
+  namespace: south
+
+---
+
+apiVersion: skupper.io/v2alpha1
+kind: Connector
+metadata:
+  name: backend
+  namespace: south
+spec:
+  routingKey: backend
+  port: 8080
+  selector: app=backend
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+  labels:
+    app: backend
+  namespace: south
+spec:
+  selector:
+    matchLabels:
+      app: backend
+  replicas: 3
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      containers:
+        - name: backend
+          image: quay.io/skupper/hello-world-backend
+          ports:
+            - containerPort: 8080
+
