@@ -1,0 +1,36 @@
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaUser
+metadata:
+  name: console-kafka-user
+  labels:
+    strimzi.io/cluster: west
+spec:
+  authentication:
+    type: tls
+  authorization:
+    type: simple
+    acls:
+      - resource:
+          type: cluster
+          name: ""
+          patternType: literal
+        operations:
+          - Describe
+          - DescribeConfigs
+      - resource:
+          type: topic
+          name: "*"
+          patternType: literal
+        operations:
+          - Read
+          - Describe
+          - DescribeConfigs
+      - resource:
+          type: group
+          name: "*"
+          patternType: literal
+        operations:
+          - Read
+          - Describe
+
