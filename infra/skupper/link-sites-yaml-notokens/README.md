@@ -43,6 +43,8 @@ oc get -n north secret/mysite-certificate  -o yaml |  yq 'del(.metadata.annotati
 
 ## Create link on target site
 
+Use the "endpoints" from the source site and add it to a Link on the target site, and also reference the secret we created in the target namespace.
+
 ```
 oc get -n north -o yaml Site/north | yq .status.endpoints | yq '.spec.endpoints += load("/dev/stdin")' yaml/link.yaml | oc create -f-
 ```
