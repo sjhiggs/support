@@ -50,9 +50,13 @@ oc get -n north -o yaml Site/north | yq .status.endpoints | yq '.spec.endpoints 
 
 ## Test
 
+```
 oc expose -n north deployment/frontend
 oc expose -n north service/frontend
+```
 
 //open in a browser
+```
 oc get -n north route/frontend -o yaml | yq .spec.host
+```
 
