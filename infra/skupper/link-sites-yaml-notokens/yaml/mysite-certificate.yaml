@@ -1,0 +1,14 @@
+apiVersion: skupper.io/v2alpha1
+kind: Certificate
+metadata:
+  name: mysite-certificate
+  namespace: north
+spec:
+  ca: skupper-site-ca
+  hosts:
+  - skupper-router
+  - skupper-router.north
+  - skupper-router-inter-router-north.apps-crc.testing
+  - skupper-router-edge-north.apps-crc.testing
+  server: true
+  subject: skupper-router

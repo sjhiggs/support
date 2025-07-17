@@ -1,0 +1,10 @@
+apiVersion: skupper.io/v2alpha1
+kind: Link
+metadata:
+  name: north-link
+  namespace: south
+spec:
+  cost: 1
+  endpoints:
+  tlsCredentials: mysite-certificate
+

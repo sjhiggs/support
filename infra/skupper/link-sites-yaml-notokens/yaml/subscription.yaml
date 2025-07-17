@@ -1,0 +1,14 @@
+apiVersion: operators.coreos.com/v1alpha1
+kind: Subscription
+metadata:
+  labels:
+    operators.coreos.com/skupper-operator.skupper-operator-2: ''
+  name: skupper-operator-v2
+  namespace: openshift-operators
+spec:
+  channel: stable-2
+  installPlanApproval: Automatic
+  name: skupper-operator
+  source: redhat-operators
+  sourceNamespace: openshift-marketplace
+
