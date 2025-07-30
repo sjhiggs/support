@@ -81,7 +81,7 @@ cat patch/domain-jboss-eap-8.0.patch | git -C /tmp/jboss-eap-quickstarts apply
 
 If MQ is configured for SSL (mTLS), don't try to send passwords:
 ```
-cat patch/domain-eap-8.0-mtls.patch | git -C /tmp/jboss-eap-quickstarts apply
+cat patch/domain-jboss-eap-8.0-mtls.patch | git -C /tmp/jboss-eap-quickstarts apply
 ```
 
 ```
