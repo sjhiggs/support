@@ -1,4 +1,4 @@
-# Simple TLS client authentication
+# Simple SCRAM-SHA-512 client authentication
 
 Example of a basic config with SCRAM-SHA-512 authentication and authorization to a topic. Meets the following requirements:
 
