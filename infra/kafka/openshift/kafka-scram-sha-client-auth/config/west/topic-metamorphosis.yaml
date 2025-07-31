@@ -1,0 +1,13 @@
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: metamorphosis
+  labels:
+    strimzi.io/cluster: west
+spec:
+  partitions: 10
+  replicas: 3
+  config:
+    retention.ms: 7200000
+    segment.bytes: 1073741824
+

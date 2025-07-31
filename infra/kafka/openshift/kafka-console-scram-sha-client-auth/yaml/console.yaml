@@ -1,0 +1,16 @@
+---
+apiVersion: console.streamshub.github.com/v1alpha1
+kind: Console
+metadata:
+  name: myconsole
+spec:
+  hostname: console-west.apps-crc.testing
+  kafkaClusters:
+    - name: west             
+      namespace: west
+      listener: scramsha512
+      properties:
+        values: []
+        valuesFrom:
+          - secretRef: 
+              name: "console-kafka-west-auth"
