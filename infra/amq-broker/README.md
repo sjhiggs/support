@@ -29,7 +29,7 @@ chmod -R a+r /tmp/ca-data
 Starts broker with plain and ssl acceptors, client cert authentication and plain auth:
 
 ```
-$ cat podman/podman-compose-plain-ssl-dual-auth.yaml | podman-compose -f- down
+$ cat podman/podman-compose-plain-ssl-dual-auth.yaml | podman-compose -f- up
 ```
 
 
