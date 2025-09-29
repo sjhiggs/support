@@ -1,0 +1,194 @@
+version: '3.7'
+
+networks:
+  mongonet:
+    driver: bridge
+    name: mongonet
+
+services:
+  mongo1:
+    image: mongo:latest
+    container_name: mongo1
+    ports:
+      - "27017:27017"
+    restart: always
+    command: ["mongod", "--replSet", "rs0", "--bind_ip_all"]
+    volumes:
+      - mongo1_data:/data/db
+    networks:
+      - mongonet
+    healthcheck:
+      test: bash -c 'mongosh --quiet --eval "db.adminCommand(\"ping\").ok" localhost:27017 | grep 1'
+      interval: 5s
+      timeout: 2s
+      retries: 20
+      start_period: 10s
+
+  mongo2:
+    image: mongo:latest
+    container_name: mongo2
+    ports:
+      - "27018:27017"
+    restart: always
+    command: ["mongod", "--replSet", "rs0", "--bind_ip_all"]
+    volumes:
+      - mongo2_data:/data/db
+    networks:
+      - mongonet
+    healthcheck:
+      test: bash -c 'mongosh --quiet --eval "db.adminCommand(\"ping\").ok" localhost:27017 | grep 1'
+      interval: 5s
+      timeout: 2s
+      retries: 20
+      start_period: 10s
+
+  mongo3:
+    image: mongo:latest
+    container_name: mongo3
+    ports:
+      - "27019:27017"
+    restart: always
+    command: ["mongod", "--replSet", "rs0", "--bind_ip_all"]
+    volumes:
+      - mongo3_data:/data/db
+    networks:
+      - mongonet
+    healthcheck:
+      test: bash -c 'mongosh --quiet --eval "db.adminCommand(\"ping\").ok" localhost:27017 | grep 1'
+      interval: 5s
+      timeout: 2s
+      retries: 20
+      start_period: 10s
+
+  mongo-setup:
+    image: mongo:latest
+    container_name: mongo-setup
+    depends_on:
+      mongo1:
+        condition: service_healthy
+      mongo2:
+        condition: service_healthy
+      mongo3:
+        condition: service_healthy
+    networks:
+      - mongonet
+    command: >
+      bash -c "
+        mongosh --host mongo1:27017 --eval '
+
+          rs.initiate({
+            _id: \"rs0\",
+            members: [
+              { _id: 0, host: \"mongo1:27017\" },
+              { _id: 1, host: \"mongo2:27017\" },
+              { _id: 2, host: \"mongo3:27017\" }
+            ]
+          });
+        '
+
+        mongosh \"mongodb://mongo1:27017,mongo2:27017,mongo3:27017/?replicaSet=rs0\" --eval '
+          let timeout = 60; // 60 seconds timeout
+          let interval = 2;  // Check every 2 seconds
+          let elapsed = 0;
+          
+          while (!db.hello().isWritablePrimary && elapsed < timeout) {
+              print(\"Waiting for primary election...\");
+              sleep(interval * 1000);
+              elapsed += interval;
+          }
+          
+          if (elapsed >= timeout) {
+              print(\"Error: Primary election timed out.\");
+              quit(1); // Exit with error code
+          }
+          print(\"Primary found! Replica set is ready.\");
+        '
+        
+        mongosh \"mongodb://mongo1:27017,mongo2:27017,mongo3:27017/?replicaSet=rs0\" --eval '
+          db = db.getSiblingDB(\"inventory\");
+          db.createCollection(\"mycollection\"); 
+        '
+      "
+
+  kafka:
+    image: quay.io/debezium/kafka:${DEBEZIUM_VERSION}
+    container_name: kafka
+    ports:
+      - 9092:9092
+      - 9093:9093
+    environment:
+      - CLUSTER_ID=oh-sxaDRTcyAr6pFRbXyzA
+      - NODE_ID=1
+      - NODE_ROLE=combined
+      - KAFKA_CONTROLLER_QUORUM_VOTERS=1@kafka:9093
+      - KAFKA_LISTENERS=PLAINTEXT://kafka:9092,CONTROLLER://kafka:9093
+      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092
+      # Set to host IP address when working on the services locally
+      # - ADVERTISED_HOST_NAME=172.17.0.1
+    networks:
+      - mongonet
+
+  connect:
+    image: debezium/strimzi-connect
+    container_name: kafka-connect
+    build:
+      context: debezium-strimzi
+      args:
+        DEBEZIUM_CONNECTOR_VERSION: "${DEBEZIUM_CONNECTOR_VERSION}"
+        STRIMZI_VERSION: "${STRIMZI_VERSION:-latest-kafka-3.4.0}"
+    ports:
+      - 8083:8083
+      - 9404:9404
+    depends_on:
+      - kafka
+      - mongo1
+      - mongo2
+      - mongo3
+    environment:
+      - KAFKA_LOG4J_OPTS=-Dlog4j.configuration=file:/opt/kafka/config/connect-log4j.properties
+      - KAFKA_CONNECT_BOOTSTRAP_SERVERS=kafka:9092
+      - KAFKA_CONNECT_METRICS_ENABLED=true
+      - KAFKA_CONNECT_JMX_EXPORTER_ENABLED=true
+      - |
+        KAFKA_CONNECT_CONFIGURATION=
+        key.converter=org.apache.kafka.connect.json.JsonConverter
+        value.converter=org.apache.kafka.connect.json.JsonConverter
+        key.converter.schemas.enable=false
+        value.converter.schemas.enable=false
+        group.id=connect
+        offset.storage.topic=connect-offsets
+        offset.storage.replication.factor=1
+        config.storage.topic=connect-configs
+        config.storage.replication.factor=1
+        status.storage.topic=connect-status
+        status.storage.replication.factor=1
+      - BOOTSTRAP_SERVERS=kafka:9092
+      - GROUP_ID=1
+      - CONFIG_STORAGE_TOPIC=my_connect_configs
+      - OFFSET_STORAGE_TOPIC=my_connect_offsets
+      - STATUS_STORAGE_TOPIC=my_connect_statuses
+    command: /opt/kafka/kafka_connect_run.sh
+    networks:
+      - mongonet
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro,z
+      - prometheus_data:/prometheus
+    command:
+      # Specify the configuration file and enable web lifecycle for config reloads
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--web.enable-lifecycle'
+    restart: always
+    # Podman-compose defaults to a separate network, which is used for service-to-service communication.
+
+
+volumes:
+  mongo1_data:
+  mongo2_data:
+  mongo3_data:
+  prometheus_data:
