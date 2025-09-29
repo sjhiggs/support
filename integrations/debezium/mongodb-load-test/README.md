@@ -18,7 +18,7 @@ podman-compose up --build -d
 look for the `debezium_metrics_milliseconds_behind_source` metric
 
 ```
-http://localhost:9000
+http://localhost:9090
 ```
 
 ```
