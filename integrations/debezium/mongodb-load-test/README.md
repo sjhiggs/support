@@ -10,7 +10,7 @@ podman-compose up --build -d
 
 ## Step 2: start the connector and load test
 ```
-./run-test-sh
+./run-test.sh
 ```
 
 ## Step 3: evaluate results
