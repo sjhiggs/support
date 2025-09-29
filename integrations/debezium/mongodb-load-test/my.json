@@ -1,0 +1,14 @@
+{
+    "name": "my-connector",
+    "config": {
+        "connector.class" : "io.debezium.connector.mongodb.MongoDbConnector",
+        "tasks.max" : "1",
+        "topic.prefix" : "dbserver1",
+        "mongodb.connection.string" : "mongodb://mongo1:27017,mongo2:27017,mongo3:27017/?replicaSet=rs0",
+        "database.include.list" : "inventory",
+        "collection.include.list": "inventory.mycollection",
+        "database.history.kafka.bootstrap.servers" : "kafka:9092",
+        "key.converter": "org.apache.kafka.connect.storage.StringConverter",
+        "value.converter": "org.apache.kafka.connect.storage.StringConverter"
+    }
+}

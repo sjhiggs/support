@@ -1,0 +1,17 @@
+{
+  "startDelaySeconds": 0,
+  "ssl": false,
+  "lowercaseOutputName": false,
+  "lowercaseOutputLabelNames": false,
+  "rules": [
+{
+    "pattern": "debezium.([^:]+)<type=connector-metrics, context=([^,]+), server=([^>]+)><>MilliSecondsBehindSource",
+    "name": "debezium_metrics_milliseconds_behind_source",
+    "labels": {
+    "plugin": "$1",
+    "name": "$3",
+    "context": "$2",
+    }
+}
+  ]
+}

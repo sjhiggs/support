@@ -1,0 +1,136 @@
+/**
+ * MongoDB Load Test Script (load_test_simple.js)
+ *
+ * This script runs a single sequence of read/write/update operations
+ * for a fixed duration on the 'inventory' database and 'mycollection'.
+ *
+ * Usage: load("load_test_simple.js")
+ */
+
+// --- Configuration ---
+const DB_NAME = "inventory";
+const COLLECTION_NAME = "mycollection";
+const TEST_DURATION_MINUTES = 15; // Primary Stopping Condition
+const READ_PERCENTAGE = 60; // 60% Reads
+const WRITE_PERCENTAGE = 30; // 30% Inserts
+const UPDATE_PERCENTAGE = 10; // 10% Updates
+
+const TEST_DURATION_MS = TEST_DURATION_MINUTES * 60 * 1000;
+// --- End Configuration ---
+
+// Use the specified database and collection
+const db = db.getMongo().getDB(DB_NAME);
+const collection = db.getCollection(COLLECTION_NAME);
+
+// Global variables for tracking metrics
+let totalReads = 0;
+let totalInserts = 0;
+let totalUpdates = 0;
+let totalErrors = 0;
+
+/**
+ * Generates a random unique identifier (UUID-like string)
+ * @returns {string}
+ */
+function generateId() {
+    return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+}
+
+/**
+ * Generates a random operation type based on configured percentages.
+ * @returns {'read'|'insert'|'update'}
+ */
+function getOperationType() {
+    const r = Math.random() * 100;
+    if (r < READ_PERCENTAGE) {
+        return 'read';
+    } else if (r < (READ_PERCENTAGE + WRITE_PERCENTAGE)) {
+        return 'insert';
+    } else {
+        return 'update';
+    }
+}
+
+// --- Main Execution ---
+
+print(`\n--- Starting Simplified Load Test ---`);
+print(`Database: ${DB_NAME}, Collection: ${COLLECTION_NAME}`);
+print(`Test Duration: ${TEST_DURATION_MINUTES} minutes (${TEST_DURATION_MS} ms)`);
+
+// 1. Initial Setup
+// Ensure there is data to read/update before starting the main loop
+if (collection.countDocuments({category: "LoadTest"}) === 0) {
+    print(`\nWARNING: Collection '${COLLECTION_NAME}' needs initial data. Running 100 inserts.`);
+    for (let i = 0; i < 100; i++) {
+        try {
+            collection.insertOne({ _id: generateId(), name: "Initial Product", category: "LoadTest", stock: 500, price: 10.00 });
+        } catch (e) {
+            // Ignore potential initial errors
+        }
+    }
+}
+
+const startTime = Date.now();
+
+// 2. Main Sequential Workload Loop
+while (Date.now() - startTime < TEST_DURATION_MS) {
+    const opType = getOperationType();
+    
+    try {
+        switch (opType) {
+            case 'insert':
+                const productId = generateId();
+                collection.insertOne({
+                    _id: productId,
+                    name: "Product-" + productId,
+                    category: "LoadTest",
+                    stock: Math.floor(Math.random() * 1000),
+                    price: (Math.random() * 100).toFixed(2),
+                    timestamp: new Date()
+                });
+                totalInserts++;
+                break;
+
+            case 'read':
+                // Query for a random stock level
+                collection.find({ stock: { $gt: Math.floor(Math.random() * 500) } }).limit(10).toArray();
+                totalReads++;
+                break;
+
+            case 'update':
+                // Find an existing document and update its stock count
+                const target = collection.findOne({ category: "LoadTest" });
+                if (target) {
+                    collection.updateOne(
+                        { _id: target._id },
+                        { $inc: { stock: -1 }, $set: { lastUpdate: new Date() } }
+                    );
+                    totalUpdates++;
+                }
+                break;
+
+            default:
+                break;
+        }
+    } catch (e) {
+        print(`Error during ${opType} operation: ${e.message}`);
+        totalErrors++;
+    }
+}
+
+// 3. Results Calculation
+const endTime = Date.now();
+const actualDurationSec = (endTime - startTime) / 1000;
+
+const totalCompletedOps = totalReads + totalInserts + totalUpdates;
+const opsPerSec = totalCompletedOps / actualDurationSec;
+
+print(`\n--- Test Complete ---`);
+print(`Total Time: ${actualDurationSec.toFixed(3)} seconds`);
+print(`Total Operations Completed: ${totalCompletedOps}`);
+print(`Total Errors: ${totalErrors}`);
+print(`Operations per Second (Overall Throughput): ${opsPerSec.toFixed(2)} ops/sec`);
+print(`\nBreakdown:`);
+print(`  Reads: ${totalReads} (${(totalReads / totalCompletedOps * 100).toFixed(1)}%)`);
+print(`  Inserts: ${totalInserts} (${(totalInserts / totalCompletedOps * 100).toFixed(1)}%)`);
+print(`  Updates: ${totalUpdates} (${(totalUpdates / totalCompletedOps * 100).toFixed(1)}%)`);
