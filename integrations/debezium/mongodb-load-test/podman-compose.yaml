@@ -7,7 +7,7 @@ networks:
 
 services:
   mongo1:
-    image: mongo:latest
+    image: mongo:7.0
     container_name: mongo1
     ports:
       - "27017:27017"
@@ -25,7 +25,7 @@ services:
       start_period: 10s
 
   mongo2:
-    image: mongo:latest
+    image: mongo:7.0
     container_name: mongo2
     ports:
       - "27018:27017"
@@ -43,7 +43,7 @@ services:
       start_period: 10s
 
   mongo3:
-    image: mongo:latest
+    image: mongo:7.0
     container_name: mongo3
     ports:
       - "27019:27017"
@@ -61,7 +61,7 @@ services:
       start_period: 10s
 
   mongo-setup:
-    image: mongo:latest
+    image: mongo:7.0
     container_name: mongo-setup
     depends_on:
       mongo1:
@@ -171,20 +171,21 @@ services:
     networks:
       - mongonet
 
-  prometheus:
-    image: prom/prometheus:latest
-    container_name: prometheus
-    ports:
-      - "9090:9090"
-    volumes:
-      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro,z
-      - prometheus_data:/prometheus
-    command:
-      # Specify the configuration file and enable web lifecycle for config reloads
-      - '--config.file=/etc/prometheus/prometheus.yml'
-      - '--web.enable-lifecycle'
-    restart: always
-    # Podman-compose defaults to a separate network, which is used for service-to-service communication.
+#  prometheus:
+#    image: prom/prometheus:latest
+#    container_name: prometheus
+#    ports:
+#      - "9090:9090"
+#    volumes:
+#      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro,z
+#      - prometheus_data:/prometheus
+#    command:
+#      # Specify the configuration file and enable web lifecycle for config reloads
+#      - '--config.file=/etc/prometheus/prometheus.yml'
+#      - '--web.enable-lifecycle'
+#    restart: always
+#    networks:
+#      - mongonet
 
 
 volumes:

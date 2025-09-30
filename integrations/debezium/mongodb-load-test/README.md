@@ -8,6 +8,12 @@ export DEBEZIUM_CONNECTOR_VERSION=2.7.3.Final
 podman-compose up --build -d
 ```
 
+```
+export DEBEZIUM_VERSION=2.2
+export DEBEZIUM_CONNECTOR_VERSION=2.2.1.Final
+podman-compose up --build -d
+```
+
 ## Step 2: start the connector and load test
 ```
 ./run-test.sh

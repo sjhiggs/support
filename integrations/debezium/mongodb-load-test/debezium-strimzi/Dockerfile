@@ -5,6 +5,7 @@ ARG DEBEZIUM_CONNECTOR_VERSION=2.7.3.Final
 ENV KAFKA_CONNECT_PLUGIN_PATH=/tmp/connect-plugins
 ENV KAFKA_CONNECT_LIBS=/opt/kafka/libs
 
+RUN echo `whoami`
 
 RUN mkdir $KAFKA_CONNECT_PLUGIN_PATH &&\
     cd $KAFKA_CONNECT_PLUGIN_PATH &&\
@@ -14,3 +15,5 @@ USER root
 RUN mkdir -p $KAFKA_HOME/custom-config
 COPY metrics-config.json $KAFKA_HOME/custom-config/metrics-config.json
 COPY strimzi-connect.properties /tmp/strimzi-connect.properties
+
+USER kafka
