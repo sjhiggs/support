@@ -6,109 +6,162 @@ networks:
     name: mongonet
 
 services:
-  mongo1:
-    image: mongo:7.0
-    container_name: mongo1
-    ports:
-      - "27017:27017"
-    restart: always
-    command: ["mongod", "--replSet", "rs0", "--bind_ip_all"]
-    volumes:
-      - mongo1_data:/data/db
-    networks:
-      - mongonet
-    healthcheck:
-      test: bash -c 'mongosh --quiet --eval "db.adminCommand(\"ping\").ok" localhost:27017 | grep 1'
-      interval: 5s
-      timeout: 2s
-      retries: 20
-      start_period: 10s
 
-  mongo2:
-    image: mongo:7.0
-    container_name: mongo2
-    ports:
-      - "27018:27017"
+  # ------------------------------------------------------------------
+  # 1. Config Server Replica Set (3 Nodes - rs.id: config-rs)
+  # ------------------------------------------------------------------
+  config1: &config-server-base
+    image: mongo:latest
+    networks: [mongonet]
+    command: mongod --configsvr --replSet config-rs --port 27017 --bind_ip_all --dbpath /data/db
     restart: always
-    command: ["mongod", "--replSet", "rs0", "--bind_ip_all"]
-    volumes:
-      - mongo2_data:/data/db
-    networks:
-      - mongonet
-    healthcheck:
-      test: bash -c 'mongosh --quiet --eval "db.adminCommand(\"ping\").ok" localhost:27017 | grep 1'
-      interval: 5s
-      timeout: 2s
-      retries: 20
-      start_period: 10s
 
-  mongo3:
-    image: mongo:7.0
-    container_name: mongo3
-    ports:
-      - "27019:27017"
+  config1:
+    <<: *config-server-base
+    container_name: mongo-config1
+    hostname: mongo-config1
+    volumes:
+      - config1-data:/data/db
+
+  config2:
+    <<: *config-server-base
+    container_name: mongo-config2
+    hostname: mongo-config2
+    volumes:
+      - config2-data:/data/db
+
+  config3:
+    <<: *config-server-base
+    container_name: mongo-config3
+    hostname: mongo-config3
+    volumes:
+      - config3-data:/data/db
+
+  # ------------------------------------------------------------------
+  # 2. Shard 1 Replica Set (3 Nodes - rs.id: shard1-rs)
+  # ------------------------------------------------------------------
+  shard1_1: &shard-server-base
+    image: mongo:latest
+    networks: [mongonet]
+    command: mongod --shardsvr --replSet shard1-rs --port 27017 --bind_ip_all --dbpath /data/db
     restart: always
-    command: ["mongod", "--replSet", "rs0", "--bind_ip_all"]
-    volumes:
-      - mongo3_data:/data/db
-    networks:
-      - mongonet
-    healthcheck:
-      test: bash -c 'mongosh --quiet --eval "db.adminCommand(\"ping\").ok" localhost:27017 | grep 1'
-      interval: 5s
-      timeout: 2s
-      retries: 20
-      start_period: 10s
 
-  mongo-setup:
-    image: mongo:7.0
-    container_name: mongo-setup
+  shard1_1:
+    <<: *shard-server-base
+    container_name: mongo-shard1-1
+    hostname: mongo-shard1-1
+    volumes:
+      - shard1-1-data:/data/db
+
+  shard1_2:
+    <<: *shard-server-base
+    container_name: mongo-shard1-2
+    hostname: mongo-shard1-2
+    volumes:
+      - shard1-2-data:/data/db
+
+  shard1_3:
+    <<: *shard-server-base
+    container_name: mongo-shard1-3
+    hostname: mongo-shard1-3
+    volumes:
+      - shard1-3-data:/data/db
+
+  # ------------------------------------------------------------------
+  # 3. Query Router (mongos) - Client Entry Point
+  # ------------------------------------------------------------------
+  mongos:
+    image: mongo:latest
+    container_name: mongo-router
+    hostname: mongo-router
+    # The mongos points to ALL members of the Config Server Replica Set
+    command: mongos --configdb config-rs/mongo-config1:27017,mongo-config2:27017,mongo-config3:27017 --port 27017 --bind_ip_all
+    networks: [mongonet]
+    ports:
+      - "27017:27017" # Expose the router port for client connections
     depends_on:
-      mongo1:
-        condition: service_healthy
-      mongo2:
-        condition: service_healthy
-      mongo3:
-        condition: service_healthy
-    networks:
-      - mongonet
-    command: >
-      bash -c "
-        mongosh --host mongo1:27017 --eval '
+      - config1
+      - shard1_1
+    restart: always
 
+
+  init_cluster:
+    image: mongo:latest
+    container_name: mongo-init
+    networks: [mongonet]
+    depends_on:
+      # Keep dependencies to ensure all processes are running before init tries to connect
+      - mongos
+      - config3
+      - shard1_3
+    entrypoint: |
+      bash -c "
+        # 0a. Wait for ALL config servers to be accessible before initiating.
+        # This is a basic TCP connection check for one node, assuming others start similarly.
+        until mongosh --host mongo-config1:27017 --eval 'quit()'; do
+          echo 'Waiting for mongo-config1 process to start...'
+          sleep 1
+        done
+
+        # 1. Initialize Config Server Replica Set (CSRS)
+        echo 'Initializing Config Server Replica Set (config-rs) with 3 members...'
+        mongosh --host mongo-config1:27017 --eval '
           rs.initiate({
-            _id: \"rs0\",
+            _id: \"config-rs\",
+            configsvr: true,
             members: [
-              { _id: 0, host: \"mongo1:27017\" },
-              { _id: 1, host: \"mongo2:27017\" },
-              { _id: 2, host: \"mongo3:27017\" }
+              { _id: 0, host: \"mongo-config1:27017\" },
+              { _id: 1, host: \"mongo-config2:27017\" },
+              { _id: 2, host: \"mongo-config3:27017\" }
             ]
           });
         '
+        echo 'Config-rs initiated. Waiting for election and replication...'
 
-        mongosh \"mongodb://mongo1:27017,mongo2:27017,mongo3:27017/?replicaSet=rs0\" --eval '
-          let timeout = 60; // 60 seconds timeout
-          let interval = 2;  // Check every 2 seconds
-          let elapsed = 0;
-          
-          while (!db.hello().isWritablePrimary && elapsed < timeout) {
-              print(\"Waiting for primary election...\");
-              sleep(interval * 1000);
-              elapsed += interval;
-          }
-          
-          if (elapsed >= timeout) {
-              print(\"Error: Primary election timed out.\");
-              quit(1); // Exit with error code
-          }
-          print(\"Primary found! Replica set is ready.\");
+        # 0b. Wait for the Config Server Replica Set to be fully operational (Primary elected).
+        # We poll 'rs.status()' on one member and grep for the Primary state.
+        until mongosh --host mongo-config1:27017 --eval 'rs.status()' | grep -q 'PRIMARY'; do
+          echo 'Waiting for config-rs to elect a PRIMARY...'
+          sleep 2
+        done
+        echo 'Config-rs PRIMARY elected.'
+
+        # 2. Wait for the MONGOS Router to recognize the Config Server.
+        # We check the sh.status() output, but we must wait for the Config RS to be ready first.
+        until mongosh --host mongo-router:27017 --eval 'sh.status()' | grep -q 'config'; do
+          echo 'Waiting for mongo-router to recognize config-rs...'
+          sleep 2
+        done
+        echo 'Mongo-router is ready.'
+
+        # 3. Initialize Shard 1 Replica Set (3 Members)
+        echo 'Initializing Shard 1 Replica Set (shard1-rs) with 3 members...'
+        mongosh --host mongo-shard1-1:27017 --eval '
+          rs.initiate({
+            _id: \"shard1-rs\",
+            members: [
+              { _id: 0, host: \"mongo-shard1-1:27017\" },
+              { _id: 1, host: \"mongo-shard1-2:27017\" },
+              { _id: 2, host: \"mongo-shard1-3:27017\" }
+            ]
+          });
         '
-        
-        mongosh \"mongodb://mongo1:27017,mongo2:27017,mongo3:27017/?replicaSet=rs0\" --eval '
-          db = db.getSiblingDB(\"inventory\");
-          db.createCollection(\"mycollection\"); 
-        '
+        # Wait for the shard replica set to elect a primary
+        sleep 5
+
+        # 4. Add Shard to Cluster via mongos
+        echo 'Adding Shard 1 to the Cluster...'
+        mongosh --host mongo-router:27017 --eval 'sh.addShard(\"shard1-rs/mongo-shard1-1:27017\")'
+
+        echo 'Sharded Cluster Setup Complete.'
+
+        # 5. init collection
+        mongosh --host mongo-router:27017 --eval \"use inventory\" --eval \"db.createCollection('mycollection')\"
+
+
+        exit 0
       "
+    restart: "no"
 
   kafka:
     image: quay.io/debezium/kafka:${DEBEZIUM_VERSION}
@@ -140,10 +193,10 @@ services:
       - 8083:8083
       - 9404:9404
     depends_on:
-      - kafka
-      - mongo1
-      - mongo2
-      - mongo3
+      init_cluster:
+        condition: service_completed_successfully # Wait for DB init script to finish
+      kafka:
+        condition: service_started # Wait for Kafka container to be running
     environment:
       - KAFKA_LOG4J_OPTS=-Dlog4j.configuration=file:/opt/kafka/config/connect-log4j.properties
       - KAFKA_CONNECT_BOOTSTRAP_SERVERS=kafka:9092
@@ -171,25 +224,14 @@ services:
     networks:
       - mongonet
 
-#  prometheus:
-#    image: prom/prometheus:latest
-#    container_name: prometheus
-#    ports:
-#      - "9090:9090"
-#    volumes:
-#      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro,z
-#      - prometheus_data:/prometheus
-#    command:
-#      # Specify the configuration file and enable web lifecycle for config reloads
-#      - '--config.file=/etc/prometheus/prometheus.yml'
-#      - '--web.enable-lifecycle'
-#    restart: always
-#    networks:
-#      - mongonet
+
 
 
 volumes:
-  mongo1_data:
-  mongo2_data:
-  mongo3_data:
+  config1-data:
+  config2-data:
+  config3-data:
+  shard1-1-data:
+  shard1-2-data:
+  shard1-3-data:
   prometheus_data:
