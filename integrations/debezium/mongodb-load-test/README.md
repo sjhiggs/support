@@ -24,10 +24,6 @@ podman-compose up --build -d
 look for the `debezium_metrics_milliseconds_behind_source` metric
 
 ```
-http://localhost:9090
-```
-
-```
 curl -s localhost:9404/metrics  | grep debezium
 ```
 
