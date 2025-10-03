@@ -53,7 +53,8 @@ KAFKA_HOME="/tmp/kafka-$KAFKA_VERSION" && export KAFKA_HOME
 if [[ ! -d $KAFKA_HOME ]]; then
   echo "Downloading Kafka to $KAFKA_HOME"
   mkdir -p "$KAFKA_HOME"
-  curl -sLk "https://archive.apache.org/dist/kafka/$KAFKA_VERSION/kafka_2.13-$KAFKA_VERSION.tgz" | tar xz -C "$KAFKA_HOME" --strip-components 1
+  curl -sLk "https://dlcdn.apache.org/kafka/$KAFKA_VERSION/kafka_2.13-$KAFKA_VERSION.tgz" | tar xz -C "$KAFKA_HOME" --strip-components 1
+#https://dlcdn.apache.org/kafka/3.9.1/kafka_2.13-3.9.1.tgz
 fi
 
 
