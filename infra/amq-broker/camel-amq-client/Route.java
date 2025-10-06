@@ -19,6 +19,7 @@ import org.apache.camel.builder.RouteBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
+import java.lang.Exception;
 
 @Component
 public class Route extends RouteBuilder {
@@ -26,11 +27,11 @@ public class Route extends RouteBuilder {
     @Override
     public void configure() throws Exception {
 
-        from("timer:bar")
-            .id("timer-consumer-route")
-            .setBody(constant("Hello from Camel"))
-            .to("amqp:queue:SCIENCEQUEUE")
-            .log("Message sent from route ${routeId} to SCIENCEQUEUE");
+//        from("timer:bar")
+//            .id("timer-consumer-route")
+//            .setBody(constant("Hello from Camel"))
+//            .to("amqp:queue:SCIENCEQUEUE")
+//            .log("Message sent from route ${routeId} to SCIENCEQUEUE");
         
         from("amqp:queue:SCIENCEQUEUE?receiveTimeout=10000")
             .id("amqp-consumer-route")
