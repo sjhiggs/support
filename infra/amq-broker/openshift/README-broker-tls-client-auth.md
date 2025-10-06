@@ -4,12 +4,14 @@ Example of a simple two-way TLS configuration with client test.
 
 # Init
 
+Create a new project an operator for AMQ broker:
+
 ```
 oc new-project myproject
 oc create -f yaml/subscription/subscription-7.13.x.yaml 
 ```
 
-Create the server and client certs and `mysecret` secret that the broker will use for TLS.  Note that this generates a root CA, intermediate/issuing CA, client cert and key, and server cert and key.  The server keystore contains the server cert, server key, and issuing CA cert.  The client keystore contains the client cert, client key, and issuing CA cert.  Both the client and server use the same root CA in a truststore.
+Use the following script to create the server and client certs and `mysecret` secret that the broker will use for TLS.  Note that this generates a root CA, intermediate/issuing CA, client cert and key, and server cert and key.  The server keystore contains the server cert, server key, and issuing CA cert.  The client keystore contains the client cert, client key, and issuing CA cert.  Both the client and server use the same root CA in a truststore.
 
 ALso note that the script assumes a wildcard domain of `apps-crc.testing`, this may need to be adjusted for environments other than openshift local.
 
