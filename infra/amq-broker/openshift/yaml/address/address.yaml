@@ -1,0 +1,10 @@
+apiVersion: broker.amq.io/v1beta1
+kind: ActiveMQArtemisAddress
+metadata:
+  #name: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa 
+  name: a
+  namespace: myproject
+spec:
+  addressName: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa  
+  queueName: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa  
+  routingType: anycast

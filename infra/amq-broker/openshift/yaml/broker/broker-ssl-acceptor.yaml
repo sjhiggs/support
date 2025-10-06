@@ -1,0 +1,17 @@
+apiVersion: broker.amq.io/v1beta1
+kind: ActiveMQArtemis
+metadata:
+  name: broker
+spec:
+  console:
+    expose: true
+  deploymentPlan:
+    size: 1
+  acceptors:
+    - name: ssl-acceptor
+      needClientAuth: true
+      port: 61617
+      protocols: 'amqp,openwire,core'
+      sslEnabled: true
+      sslSecret: mysecret
+      expose: true
