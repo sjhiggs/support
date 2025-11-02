@@ -1,4 +1,4 @@
-# Kafka Console with Client Certificate Auth to Kafka
+# Kafka Console with SCRAM-SHA-512 Auth to Kafka
 
 ## Prerequisites
 
@@ -16,7 +16,7 @@ oc create -f yaml/subscription.yaml
 oc create -f yaml/kafkauser-console.yaml
 ```
 
-## Extract the kafka console user's certs/keys and create the secret needed by the console
+## Configure security protocol for the authentication to Kafka
 
 ```
 oc create secret generic console-kafka-west-auth  --from-literal security.protocol=SASL_SSL
