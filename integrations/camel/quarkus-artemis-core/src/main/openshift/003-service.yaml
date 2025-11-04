@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: broker-svc
+  labels:
+    ActiveMQArtemis: broker
+    application: broker-app
+spec:
+  ports:
+  - port: 61616
+    protocol: TCP
+  selector:
+    ActiveMQArtemis: broker
+    application: broker-app
+  type: ClusterIP
