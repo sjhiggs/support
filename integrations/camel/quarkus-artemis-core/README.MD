@@ -14,6 +14,6 @@ mvn clean quarkus:dev
 ## Native mode
 
 ~~~
-quarkus build --native -Dquarkus.profile=dev
+quarkus build --native
 ./target/camel-artemis-core-client-1.0.0-runner
 ~~~
