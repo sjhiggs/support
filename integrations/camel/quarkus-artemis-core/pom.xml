@@ -42,13 +42,11 @@
             <artifactId>quarkus-artemis-jms</artifactId>
             <version>3.5.1</version>
         </dependency>
-<!--
         <dependency>
             <groupId>io.quarkiverse.messaginghub</groupId>
             <artifactId>quarkus-pooled-jms</artifactId>
             <version>2.6.0</version>
         </dependency>
--->
         <dependency>
             <groupId>org.apache.camel.quarkus</groupId>
             <artifactId>camel-quarkus-jms</artifactId>
