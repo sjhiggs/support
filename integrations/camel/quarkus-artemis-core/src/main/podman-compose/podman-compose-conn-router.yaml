@@ -1,0 +1,43 @@
+version: '3.8'
+services:
+  demo-broker:
+    container_name: mybroker
+    hostname: mybroker
+    image: registry.redhat.io/amq7/amq-broker-rhel9:7.13
+    ports:
+      - "8161:8161"
+      - "61617:61617"
+      - "62617:62617"
+    volumes:
+      - ./src/main/amq/broker.properties:/opt/amq/custom/properties/broker.properties:z
+      - /tmp/ca-data/certs/myserver.p12:/opt/amq/custom/ssl/myserver.p12:z
+      - /tmp/ca-data/certs/truststore.p12:/opt/amq/custom/ssl/truststore.p12:z
+    environment:
+      AMQ_USER: "admin"
+      AMQ_PASSWORD: "admin"
+      AMQ_EXTRA_ARGS: "--no-autotune --no-mqtt-acceptor --no-stomp-acceptor --no-amqp-acceptor --no-hornetq-acceptor"
+      JAVA_OPTS: "-Dbroker.properties=/opt/amq/custom/properties/broker.properties"
+    networks:
+      - myamqnet
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://mybroker:8161/console/"]
+      interval: 1s
+      timeout: 1s
+      retries: 20
+      start_period: 1s
+  demo-client:
+    image: localhost/camel-quarkus-artemis-core:1.0.0
+    name: myclient
+    volumes:
+      - /tmp/ca-data/certs/truststore.p12:/opt/amq/custom/ssl/truststore.p12:z
+    environment:
+      JAVA_OPTS: "-Djavax.net.ssl.trustStore=/opt/amq/custom/ssl/truststore.p12 -Djavax.net.ssl.trustStorePassword=foobar"
+    networks:
+      - myamqnet
+    depends_on:
+      demo-broker:
+        condition: service_healthy
+    
+networks:
+  myamqnet:
+    name: myamqnet
