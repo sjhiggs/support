@@ -6,13 +6,13 @@
     <version>1.0.0</version>
 
     <properties>
-        <compiler-plugin.version>3.13.0</compiler-plugin.version>
+        <compiler-plugin.version>3.14.0</compiler-plugin.version>
         <maven.compiler.release>21</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <quarkus.platform.artifact-id>quarkus-bom</quarkus.platform.artifact-id>
-        <quarkus.platform.group-id>io.quarkus.platform</quarkus.platform.group-id>
-        <quarkus.platform.version>3.15.1</quarkus.platform.version>
+        <quarkus.platform.group-id>com.redhat.quarkus.platform</quarkus.platform.group-id>
+        <quarkus.platform.version>3.27.0.redhat-00002</quarkus.platform.version>
         <skipITs>true</skipITs>
         <surefire-plugin.version>3.3.1</surefire-plugin.version>
     </properties>
@@ -38,14 +38,8 @@
 
     <dependencies>
         <dependency>
-            <groupId>io.quarkiverse.artemis</groupId>
-            <artifactId>quarkus-artemis-jms</artifactId>
-            <version>3.5.1</version>
-        </dependency>
-        <dependency>
             <groupId>io.quarkiverse.messaginghub</groupId>
             <artifactId>quarkus-pooled-jms</artifactId>
-            <version>2.6.0</version>
         </dependency>
         <dependency>
             <groupId>org.apache.camel.quarkus</groupId>
@@ -57,8 +51,11 @@
         </dependency>
         <dependency>
             <groupId>io.quarkiverse.artemis</groupId>
+            <artifactId>quarkus-artemis-jms</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkiverse.artemis</groupId>
             <artifactId>quarkus-artemis-core</artifactId>
-            <version>3.5.1</version>
         </dependency>
         <dependency>
             <groupId>org.apache.camel.quarkus</groupId>

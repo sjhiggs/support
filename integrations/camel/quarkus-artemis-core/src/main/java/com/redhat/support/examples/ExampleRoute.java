@@ -10,9 +10,9 @@ public class ExampleRoute extends RouteBuilder {
         from("timer:producer?period={{timer.period}}")
             .routeId("sendMessageToArtemis")
             .setBody(simple("hello world"))
-            .to("jms:queue:{{test.queue}}?connectionFactory=#pooledcf");
+            .to("jms:queue:{{test.queue}}");
 
-        from("jms:queue:{{test.queue}}?connectionFactory=#pooledcf")
+        from("jms:queue:{{test.queue}}")
             .routeId("consumeMessageFromArtemis")
             .log("${body}");
     }

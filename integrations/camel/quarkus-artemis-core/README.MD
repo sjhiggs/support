@@ -13,7 +13,7 @@ Create certificates for broker TLS:
 (requires a running broker)
 
 ```
-mvn clean quarkus:dev
+mvn clean quarkus:dev -Djvm.args="-Djavax.net.ssl.trustStore=/tmp/ca-data/certs/truststore.p12 -Djavax.net.ssl.trustStorePassword=foobar"
 ```
 
 ## JVM podman-compose
@@ -21,20 +21,24 @@ mvn clean quarkus:dev
 example with a running broker and a connection router:
 
 ```
-./mvnw clean compile
-podman build -f src/main/docker/Dockerfile.jvm -t camel-quarkus-artemis-core:1.0.0
+./mvnw clean package -Dquarkus.profile=podman
+podman build -f src/main/docker/Dockerfile.jvm -t camel-quarkus-artemis-core:1.0.0 .
 cat src/main/podman-compose/podman-compose-conn-router.yaml | podman-compose -f- up
 ```
+
+//N.B. - make sure the containers are cleaned up (podman-compose -f- down)
 
 ## Native podman-compose
 
 example with a running broker and a connection router:
 
 ```
-./mvnw clean package -Dnative
-podman build -f src/main/docker/Dockerfile.native -t camel-quarkus-artemis-core:1.0.0
+./mvnw clean package -Dquarkus.profile=podman -Dnative
+podman build -f src/main/docker/Dockerfile.native -t camel-quarkus-artemis-core:1.0.0 .
 cat src/main/podman-compose/podman-compose-conn-router.yaml | podman-compose -f- up
 ```
+
+//N.B. - make sure the containers are cleaned up (podman-compose -f- down)
 
 ## Native mode
 

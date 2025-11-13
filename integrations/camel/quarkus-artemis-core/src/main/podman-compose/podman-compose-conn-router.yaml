@@ -24,7 +24,7 @@ services:
       interval: 1s
       timeout: 1s
       retries: 20
-      start_period: 1s
+      start_period: 5s
   demo-client:
     image: localhost/camel-quarkus-artemis-core:1.0.0
     name: myclient
