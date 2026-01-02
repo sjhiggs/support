@@ -5,9 +5,9 @@
 Use the "ca" project to initialize a new CA, Issuing CA, and broker certs:
 
 ```
-../ca/scripts/create.sh
-../ca/scripts/cert-server.sh --cn=myserver --subject-alt-name="DNS:127.0.0.1,DNS:localhost"
-../ca/scripts/cert-client.sh --cn=myuser 
+../../ca/scripts/create.sh
+../../ca/scripts/cert-server.sh --cn=myserver --subject-alt-name="DNS:127.0.0.1,DNS:localhost"
+../../ca/scripts/cert-client.sh --cn=myuser 
 ```
 
 Create truststore, client auth pkcs12, server pkc12:
@@ -29,7 +29,7 @@ chmod -R a+r /tmp/ca-data
 Starts broker with plain and ssl acceptors, client cert authentication and plain auth:
 
 ```
-$ cat podman/podman-compose-plain-ssl-dual-auth.yaml | podman-compose -f- up
+$ cat yaml/podman-compose-plain-ssl-dual-auth.yaml | podman-compose -f- up
 ```
 
 
