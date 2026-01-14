@@ -1,0 +1,39 @@
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaUser
+metadata:
+  name: alice
+  labels:
+    strimzi.io/cluster: west
+spec:
+  authentication:
+    type: tls
+  authorization:
+    type: simple
+    acls:
+      # Example consumer Acls for topic metamorphosis using consumer group metamorphosis-consumer
+      - resource:
+          type: topic
+          name: metamorphosis
+          patternType: literal
+        operations:
+          - Describe
+          - Read
+        host: "*"
+      - resource:
+          type: group
+          name: metamorphosis-group
+          patternType: literal
+        operations:
+          - Read
+        host: "*"
+      # Example Producer Acls for topic metamorphosis
+      - resource:
+          type: topic
+          name: metamorphosis
+          patternType: literal
+        operations:
+          - Create
+          - Describe
+          - Write
+        host: "*"
+
