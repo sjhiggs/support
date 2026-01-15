@@ -2,8 +2,9 @@
 
 Example of a basic config with TLS liatener using a custom CA. Meets the following requirements:
 
-* user managed certificates
-* Route type TLS listener
+* User managed certificates
+* Route type TLS listener issued by custom CA
+* Client certificate auth using custom CA
 
 ## Prerequisites
 
