@@ -1,0 +1,11 @@
+kind: Console
+apiVersion: console.streamshub.github.com/v1alpha1
+metadata:
+  name: west
+  namespace: west
+spec:
+  hostname: console-west.apps-crc.testing
+  kafkaClusters:
+    - name: west
+      namespace: west
+      listener: internal
