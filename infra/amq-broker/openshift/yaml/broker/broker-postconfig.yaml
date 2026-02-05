@@ -1,0 +1,27 @@
+apiVersion: broker.amq.io/v1beta1
+kind: ActiveMQArtemis
+metadata:
+  name: broker
+spec:
+  console:
+    expose: true
+  deploymentPlan:
+    size: 1
+  resourceTemplates:
+    - patch:
+        kind: StatefulSet
+        spec:
+          template:
+            spec:
+              initContainers:
+                - name: broker-container-init
+                  volumeMounts:
+                    - mountPath: /amq/scripts
+                      name: post-config
+              volumes:
+                - name: post-config
+                  secret:
+                    secretName: post-config
+      selector:
+        kind: StatefulSet
+
