@@ -16,7 +16,9 @@ cp config/single-sasl-plain/kafka_server_jaas.conf /tmp
 
 ## Allow alice to access foo topic
 ```
-/tmp/kafka-$KAFKA_VERSION/bin/kafka-acls.sh --bootstrap-server localhost:9092 --add --allow-principal User:alice --operation Read --operation Write --topic foo --command-config config/single-sasl-plain/admin.properties
+/tmp/kafka-$KAFKA_VERSION/bin/kafka-acls.sh --bootstrap-server localhost:9092 --add --allow-principal User:alice --operation Read --operation Write --operation Describe --operation Create --operation --topic foo --command-config config/single-sasl-plain/admin.properties
+
+/tmp/kafka-$KAFKA_VERSION/bin/kafka-acls.sh --bootstrap-server localhost:9092 --add --allow-principal User:alice --operation Read --operation Create  --group mygroup --command-config config/single-sasl-plain/admin.properties
 ```
 
 ## Test alice produce to foo topic
