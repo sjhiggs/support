@@ -1,0 +1,47 @@
+<?xml version='1.0'?>
+<configuration xmlns="urn:activemq"
+               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+               xmlns:xi="http://www.w3.org/2001/XInclude"
+               xsi:schemaLocation="urn:activemq /schema/artemis-configuration.xsd">
+
+   <core xmlns="urn:activemq:core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="urn:activemq:core ">
+
+      <name>0.0.0.0</name>
+      <persistence-enabled>true</persistence-enabled>
+
+      <store>
+         <database-store>
+            <jdbc-connection-url>jdbc:postgresql://postgres-db:5432/artemis_data</jdbc-connection-url>
+            <jdbc-user>artemis</jdbc-user>
+            <jdbc-password>ENC(${MASKED_PASS})</jdbc-password>
+            <jdbc-driver-class-name>org.postgresql.Driver</jdbc-driver-class-name>
+            
+            <bindings-table-name>ARTEMIS_BINDINGS</bindings-table-name>
+            <message-table-name>ARTEMIS_MESSAGES</message-table-name>
+            <large-message-table-name>ARTEMIS_LARGE_MESSAGES</large-message-table-name>
+            <page-store-table-name>PAGE_STORE</page-store-table-name>
+            <node-manager-store-table-name>ARTEMIS_NODE_MANAGER</node-manager-store-table-name>
+         </database-store>
+      </store>
+
+      <acceptors>
+         <acceptor name="artemis">tcp://0.0.0.0:61616?tcpSendBufferSize=1048576;tcpReceiveBufferSize=1048576;amqpMinLargeMessageSize=102400;protocols=CORE,AMQP,STOMP,HORNETQ,MQTT,OPENWIRE;useEpoll=true;amqpCredits=1000;amqpLowCredits=300;amqpDuplicateDetection=true;supportAdvisory=false;suppressInternalManagementObjects=false</acceptor>
+      </acceptors>
+
+      <security-settings>
+         <security-setting match="#">
+            <permission type="createNonDurableQueue" roles="amq"/>
+            <permission type="deleteNonDurableQueue" roles="amq"/>
+            <permission type="createDurableQueue" roles="amq"/>
+            <permission type="deleteDurableQueue" roles="amq"/>
+            <permission type="createAddress" roles="amq"/>
+            <permission type="deleteAddress" roles="amq"/>
+            <permission type="consume" roles="amq"/>
+            <permission type="browse" roles="amq"/>
+            <permission type="send" roles="amq"/>
+            <permission type="manage" roles="amq"/>
+         </security-setting>
+      </security-settings>
+   </core>
+</configuration>

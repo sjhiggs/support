@@ -1,0 +1,65 @@
+#!/bin/bash
+
+# Configuration
+export DB_PASS="artemis_password"
+OUTPUT_DIR="podman"
+LIB_DIR="lib"
+
+# Templates & Outputs
+COMPOSE_TEMPLATE="src/podman-compose.template.yaml"
+COMPOSE_OUTPUT="$OUTPUT_DIR/podman-compose.yaml"
+
+BROKER_TEMPLATE="src/broker.template.xml"
+BROKER_OUTPUT="$OUTPUT_DIR/etc/broker.xml"
+
+JDBC_JAR="$LIB_DIR/postgresql.jar"
+PG_DRIVER_URL="https://jdbc.postgresql.org/download/postgresql-42.7.3.jar"
+
+# Parse CLI options
+while [[ "$#" -gt 0 ]]; do
+    case $1 in
+        --amq-dir) AMQ_DIR="$2"; shift ;;
+        --encryption-key) export ENC_KEY="$2"; shift ;;
+        *) echo "Unknown parameter: $1"; exit 1 ;;
+    esac
+    shift
+done
+
+# Validation
+if [ -z "$AMQ_DIR" ] || [ -z "$ENC_KEY" ]; then
+    echo "Usage: $0 --amq-dir /path/to/artemis --encryption-key my-key"
+    exit 1
+fi
+
+# Ensure output directories exist
+mkdir -p "$OUTPUT_DIR/etc"
+mkdir -p "$LIB_DIR"
+
+# 1. Download Postgres JDBC Driver
+if [ ! -f "$JDBC_JAR" ]; then
+    echo "Downloading PostgreSQL JDBC driver..."
+    curl -sL "$PG_DRIVER_URL" -o "$JDBC_JAR"
+fi
+
+# 2. Generate the masked password 
+echo "Running: $AMQ_DIR/bin/artemis mask ..."
+MASKED_RAW=$("$AMQ_DIR/bin/artemis" mask "$DB_PASS" --key "$ENC_KEY")
+export MASKED_PASS=$(echo "$MASKED_RAW" | grep "result:" | awk '{print $2}')
+
+if [ -z "$MASKED_PASS" ]; then
+    echo "Error: Could not extract masked password."
+    exit 1
+fi
+
+# 3. Process templates
+if command -v envsubst >/dev/null 2>&1; then
+    envsubst < "$COMPOSE_TEMPLATE" > "$COMPOSE_OUTPUT"
+    envsubst < "$BROKER_TEMPLATE" > "$BROKER_OUTPUT"
+else
+    # Fallback
+    sed -e "s/\${DB_PASS}/$DB_PASS/g" -e "s/\${ENC_KEY}/$ENC_KEY/g" "$COMPOSE_TEMPLATE" > "$COMPOSE_OUTPUT"
+    sed -e "s/\${MASKED_PASS}/$MASKED_PASS/g" "$BROKER_TEMPLATE" > "$BROKER_OUTPUT"
+fi
+
+echo "✅ Generated $COMPOSE_OUTPUT"
+echo "✅ Generated $BROKER_OUTPUT"

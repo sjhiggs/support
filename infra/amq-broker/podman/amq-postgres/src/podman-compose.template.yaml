@@ -1,0 +1,42 @@
+services:
+  postgres-db:
+    image: docker.io/postgres:15
+    container_name: artemis-postgres
+    environment:
+      POSTGRES_USER: artemis
+      POSTGRES_PASSWORD: ${DB_PASS}
+      POSTGRES_DB: artemis_data
+    volumes:
+      - artemis_db_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  artemis:
+    image: quay.io/artemiscloud/activemq-artemis-broker:latest
+    container_name: artemis-broker
+    depends_on:
+      - postgres-db
+    ports:
+      - "61616:61616"
+      - "8161:8161"
+    environment:
+      AMQ_USER: admin
+      AMQ_PASSWORD: admin_password
+      ARTEMIS_DEFAULT_SENSITIVE_STRING_CODEC_KEY: "${ENC_KEY}"
+    volumes:
+      - ../lib/postgresql.jar:/opt/amq/lib/postgresql.jar:ro,Z
+      - ./etc/broker.xml:/opt/custom-config/broker.xml:ro,Z
+    command: >
+      bash -c "
+      if [ ! -f /home/jboss/broker/bin/artemis ]; then
+        echo 'Creating Artemis instance...';
+        /opt/amq/bin/artemis create /home/jboss/broker --user $$AMQ_USER --password $$AMQ_PASSWORD --require-login --http-host 0.0.0.0;
+      fi;
+      echo 'Injecting custom broker.xml...';
+      cp /opt/custom-config/broker.xml /home/jboss/broker/etc/broker.xml;
+      echo 'Starting broker...';
+      exec /home/jboss/broker/bin/artemis run
+      "
+
+volumes:
+  artemis_db_data:
