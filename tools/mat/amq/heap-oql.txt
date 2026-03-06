@@ -1,0 +1,50 @@
+# broker name
+SELECT toString(impl.configuration.name) FROM org.apache.activemq.artemis.core.server.impl.ActiveMQServerImpl impl
+
+# queue stats
+SELECT toString(q.addressInfo.name.str) AS address_name, toString(q.queueConfiguration.name.str) AS queue_name, q.messagesAdded.value AS messages_added, q.messagesAcknowledged.value AS messages_acked, q.messagesExpired.value AS messages_expired, q.deliveringMetrics.messageCount AS delivering, q.pendingMetrics.messageCount AS pending_count, q.consumers.consumers.size AS consumer_count, q.pagedReferences.value AS page_refs, q.queueMemorySize.size AS queue_memory_size FROM org.apache.activemq.artemis.core.server.impl.QueueImpl q 
+
+# queue stats for a particular queue
+SELECT toString(q.addressInfo.name.str) AS address_name, toString(q.name.str) AS queue_name, q.messagesAdded.value AS messages_added, q.messagesAcknowledged.value AS messages_acked, q.messagesExpired.value AS messages_expired, q.deliveringMetrics.messageCount AS delivering, q.queueMemorySize.value AS queue_memory, q.consumers.consumers.size AS consumer_count, q.pagedReferences.value AS page_refs FROM org.apache.activemq.artemis.core.server.impl.QueueImpl q WHERE toString(q.name.str).startsWith("production.enterprise.ecm.document-request-srs")
+
+
+# list consumers, with remote address
+SELECT toString(consumer.messageQueue.name.str) AS queue_name, consumer.session.remotingConnection.transportConnection.channel.remote.toString() AS remote_address, consumer.availableCredits.value AS available_credits, deliveringRefs.tail AS delivering_tail, deliveringRefs.head AS delivering_head, deliveringRefs.elements.@length AS delivering_deque_length FROM org.apache.activemq.artemis.core.server.impl.ServerConsumerImpl consumer
+
+# list consumers for a particular queue, with remote address
+SELECT toString(consumer.messageQueue.name.str) AS queue_name, consumer.session.remotingConnection.transportConnection.channel.remote.toString() AS remote_address, consumer.availableCredits.value AS available_credits FROM org.apache.activemq.artemis.core.server.impl.ServerConsumerImpl consumer WHERE toString(consumer.messageQueue.name.str).startsWith("myqueue.test")
+
+# cluster connections
+SELECT bridge.targetNodeID.toString() AS targetNode, bridge.session.sessionContext.remotingConnection.transportConnection.channel.remote.toString() AS remote_address, bridge.session.sessionContext.remotingConnection.transportConnection.channel.local.toString() AS local_address, bridge.metrics.messagesAcknowledged AS bridge_msg_acked, bridge.session.consumerWindowSize AS consumer_window_size, bridge.metrics.messagesPendingAcknowledgement AS bridge_msg_pending_ack, bridge.stopping AS stopping, bridge.started AS started FROM org.apache.activemq.artemis.core.server.cluster.impl.ClusterConnectionBridge bridge
+
+#
+SELECT a.name.str.toString() AS NAME, a.active AS ISActive, a.refs.size AS DELIVERING_REFS, a.metrics.messagesAcknowledged AS TOTAL_ACKS, a.metrics.messagesPendingAcknowledgement AS PENDING_ACKS FROM org.apache.activemq.artemis.core.server.cluster.impl.ClusterConnectionBridge a WHERE (a.name.str.toString() = "$.artemis.internal.sf.static-cluster.5984983b-a993-11ea-82fe-005056a82901")
+
+# ghost consumers
+SELECT toString(consumer.messageQueue.cname.str) AS queue_name,
+       consumer.session.remotingConnection.transportConnection.channel.remote.toString() AS remote_address,
+       consumer.session.closed AS session_closed, consumer.isClosed AS consumer_closed,
+       consumer.session.remotingConnection.destroyed AS connection_destroyed,
+       consumer.session.remotingConnection.transportConnection.channel.id.shortValue.toString() AS connection_id,
+       deliveringRefs.tail AS delivering_tail,
+       deliveringRefs.head AS delivering_head,
+       deliveringRefs.elements.@length AS delivering_deque_length
+FROM org.apache.activemq.artemis.core.server.impl.ServerConsumerImpl consumer
+WHERE ((toString(consumer.binding.queue.name.str) = "FDXSHIP.FDEG.TSV.FTMKEY.MERGEFTM.3535174")
+AND (consumer.session.remotingConnection.transportConnection.channel.remote.toString() = "10.52.104.8:39202"))
+
+
+# thread analysis
+SELECT e.workQueue.count.value FROM org.apache.activemq.artemis.utils.ActiveMQThreadPoolExecutor e WHERE toString(e.threadFactory.groupName).contains("ActiveMQ-server-org.apache.activemq.artemis.core.server.impl.ActiveMQServerImpl")
+
+
+# what version of artemis
+select toString(f.path) from java.io.File f where toString(f.path).contains("artemis-")
+
+
+# number openwire sessions
+select * from org.apache.activemq.artemis.core.protocol.openwire.amq.AMQSession s where s.connection.transportConnection.channel.socket.state = 7
+
+
+# global size usage and global-max-size (elements is number of messages)
+SELECT pmi.globalSizeMetric.size AS global_size, pmi.globalSizeMetric.elements AS global_elements, pmi.maxSize AS global_max_size FROM org.apache.activemq.artemis.core.paging.impl.PagingManagerImpl pmi
