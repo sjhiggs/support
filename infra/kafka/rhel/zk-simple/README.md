@@ -4,7 +4,7 @@ Scripts created by AI - use at your own risk!
 
 Startup
 ```
-export KAFKA_DIR=/tmp/kafka-3.9.1
+export KAFKA_DIR=/tmp/kafka-3.9.2
 ./scripts/start-all.sh
 ```
 
@@ -12,7 +12,7 @@ Test
 ```
 ./scripts/test-cluster.sh
 ./scripts/test-failover.sh
-./scripts/cluster-status.sh
+./scripts/cluster-status.sh -g test-group
 ```
 
 Shutdown

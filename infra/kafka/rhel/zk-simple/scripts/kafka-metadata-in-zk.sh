@@ -47,6 +47,12 @@ TOPICS=$(echo "$TOPIC_RAW" | sed 's/[][]//g; s/,/ /g')
 
 for topic in $TOPICS; do
     echo "Topic: $topic"
+
+    # NEW: Skip the internal offsets topic to save time and ZK queries
+    if [ "$topic" == "__consumer_offsets" ]; then
+        echo "  > [SKIPPING] Internal topic with many partitions. Use kafka-topics.sh for full detail."
+        continue
+    fi
     
     # Get partitions for this topic
     PART_RAW=$("$ZK_SHELL" $ZK_HOST ls /brokers/topics/$topic/partitions 2>/dev/null | grep "^\[")

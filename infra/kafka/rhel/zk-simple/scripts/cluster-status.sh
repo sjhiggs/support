@@ -1,24 +1,25 @@
 #!/bin/bash
 
-# 1. Setup Base Paths
-# Defaults to $KAFKA_DIR if no -d flag is provided
-KAFKA_PATH=${1:-$KAFKA_DIR}
+# 1. Setup Defaults
+# Use KAFKA_DIR if set, otherwise leave empty for validation
+KAFKA_PATH="$KAFKA_DIR"
 TOPIC_NAME="cluster-test-topic"
 GROUP_ID="test-group"
 
 # 2. Parse CLI parameters
+# getopts will now override the environment variable if -d is used
 while getopts "d:t:g:" opt; do
   case $opt in
     d) KAFKA_PATH="$OPTARG" ;;
     t) TOPIC_NAME="$OPTARG" ;;
     g) GROUP_ID="$OPTARG" ;;
-    *) echo "Usage: $0 -d /path/to/kafka [-t topic] [-g group]"; exit 1 ;;
+    *) echo "Usage: $0 [-d /path/to/kafka] [-t topic] [-g group]"; exit 1 ;;
   esac
 done
 
 # Validation
 if [ -z "$KAFKA_PATH" ]; then
-    echo "Error: Kafka directory not specified. Use -d or set KAFKA_DIR."
+    echo "Error: Kafka directory not specified. Use -d or set KAFKA_DIR environment variable."
     exit 1
 fi
 
