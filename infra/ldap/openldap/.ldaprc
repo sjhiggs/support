@@ -1,0 +1,4 @@
+#Example .ldaprc
+SASL_MECH external
+TLS_CACERT /tmp/ldap-certs/ca.pem
+

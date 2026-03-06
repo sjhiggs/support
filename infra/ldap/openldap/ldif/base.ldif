@@ -1,0 +1,54 @@
+version: 1
+
+dn: ou=people,dc=redhat,dc=local
+changetype: add
+objectClass: organizationalUnit
+objectClass: top
+ou: people
+
+dn: ou=groups,dc=redhat,dc=local
+changetype: add
+objectClass: organizationalUnit
+objectClass: top
+ou: groups
+
+dn: cn=myuser,ou=people,dc=redhat,dc=local
+changetype: add
+objectClass: inetOrgPerson
+objectClass: organizationalPerson
+objectClass: person
+objectClass: top
+cn: myuser
+sn: User
+uid: myuser
+userPassword: mypassword
+
+dn: cn=admin,ou=groups,dc=redhat,dc=local
+changetype: add
+objectClass: groupOfUniqueNames
+objectClass: top
+cn: admin
+uniqueMember: cn=myuser,ou=people,dc=redhat,dc=local
+
+dn: cn=ssh,ou=groups,dc=redhat,dc=local
+changetype: add
+objectClass: groupOfUniqueNames
+objectClass: top
+cn: ssh
+uniqueMember: cn=myuser,ou=people,dc=redhat,dc=local
+
+dn: cn=amq,ou=groups,dc=redhat,dc=local
+changetype: add
+objectClass: groupOfUniqueNames
+objectClass: top
+cn: amq
+uniqueMember: cn=myuser,ou=people,dc=redhat,dc=local
+
+dn: cn=manager,ou=groups,dc=redhat,dc=local
+changetype: add
+objectClass: groupOfUniqueNames
+objectClass: top
+cn: manager
+uniqueMember: cn=myuser,ou=people,dc=redhat,dc=local
+
+
