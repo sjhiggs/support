@@ -14,7 +14,7 @@
          <database-store>
             <jdbc-connection-url>jdbc:postgresql://postgres-db:5432/artemis_data</jdbc-connection-url>
             <jdbc-user>artemis</jdbc-user>
-            <jdbc-password>ENC(${MASKED_PASS})</jdbc-password>
+            <jdbc-password>ENC(${MASKED_PASS})</jdbc-password> <!-- notsecret -->
             <jdbc-driver-class-name>org.postgresql.Driver</jdbc-driver-class-name>
             
             <bindings-table-name>ARTEMIS_BINDINGS</bindings-table-name>
