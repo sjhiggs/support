@@ -5,4 +5,6 @@
   regexes = [
     # Ignore lines containing pickles
     '''mypassword''',
+
+    '''ENC\(\$\{MASKED_PASS\}\)''',
   ]
