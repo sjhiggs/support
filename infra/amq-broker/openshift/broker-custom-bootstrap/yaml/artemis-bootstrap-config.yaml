@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: artemis-bootstrap-config
+data:
+  bootstrap.xml: |
+    <broker xmlns="http://activemq.apache.org/schema">
+       <jaas-security domain="activemq"/>
+
+       <server configuration="file:${artemis.instance}/etc/broker.xml"/>
+
+       <web path="web" rootRedirectLocation="console">
+           <binding name="artemis" uri="http://0.0.0.0:8161">
+               <app name="console" url="console" war="console.war"/>
+           </binding>
+
+           <!-- HTTP & IP Request Logging -->
+           <request-log filename="${artemis.instance}/log/http-access-yyyy_MM_dd.log"
+                        append="true"
+                        extended="true"/>
+       </web>
+    </broker>

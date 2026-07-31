@@ -1,0 +1,32 @@
+apiVersion: broker.amq.io/v1beta1
+kind: ActiveMQArtemis
+metadata:
+  name: artemis-broker
+spec:
+  console:
+    expose: true
+  deploymentPlan:
+    size: 1
+  resourceTemplates:
+    - selector:
+        kind: "StatefulSet"
+      patch:
+        kind: "StatefulSet"
+        spec:
+          template:
+            spec:
+              volumes:
+                - name: custom-bootstrap-vol
+                  configMap:
+                    name: artemis-bootstrap-config
+                - name: post-config-vol
+                  configMap:
+                    name: bootstrap-post-config
+                    defaultMode: 0755
+              initContainers:
+                - name: artemis-broker-container-init
+                  volumeMounts:
+                    - name: custom-bootstrap-vol
+                      mountPath: /amq/custom
+                    - name: post-config-vol
+                      mountPath: /amq/scripts

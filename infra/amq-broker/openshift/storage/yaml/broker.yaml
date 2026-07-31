@@ -1,0 +1,26 @@
+apiVersion: broker.amq.io/v1beta1
+kind: ActiveMQArtemis
+metadata:
+  name: broker
+spec:
+  console:
+    expose: true
+  deploymentPlan:
+    size: 1
+    persistenceEnabled: true
+    storage:
+      size: 2Gi
+  env:
+    - name: JAVA_ARGS_APPEND
+#      value: '-XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=$(AMQ_DATA_DIR)'
+      value: '-XX:-UseG1GC -XX:+UseShenandoahGC'
+#      storageClassName: lvms-vg1
+#  env:
+#    - name: AMQ_REQUIRE_LOGIN
+#      value: "true"
+#    - name: AMQ_USER
+#      value: "myadmin"
+#    - name: AMQ_PASSWORD
+#      value: "foobar"
+
+
