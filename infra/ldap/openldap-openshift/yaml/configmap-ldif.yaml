@@ -1,0 +1,49 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: openldap-ldif
+data:
+  50-bootstrap.ldif: |
+    dn: ou=people,dc=redhat,dc=local
+    objectClass: organizationalUnit
+    objectClass: top
+    ou: people
+
+    dn: ou=groups,dc=redhat,dc=local
+    objectClass: organizationalUnit
+    objectClass: top
+    ou: groups
+
+    dn: cn=myuser,ou=people,dc=redhat,dc=local
+    objectClass: inetOrgPerson
+    objectClass: organizationalPerson
+    objectClass: person
+    objectClass: top
+    cn: myuser
+    sn: User
+    uid: myuser
+    userPassword: mypassword
+
+    dn: cn=admin,ou=groups,dc=redhat,dc=local
+    objectClass: groupOfUniqueNames
+    objectClass: top
+    cn: admin
+    uniqueMember: cn=myuser,ou=people,dc=redhat,dc=local
+
+    dn: cn=ssh,ou=groups,dc=redhat,dc=local
+    objectClass: groupOfUniqueNames
+    objectClass: top
+    cn: ssh
+    uniqueMember: cn=myuser,ou=people,dc=redhat,dc=local
+
+    dn: cn=amq,ou=groups,dc=redhat,dc=local
+    objectClass: groupOfUniqueNames
+    objectClass: top
+    cn: amq
+    uniqueMember: cn=myuser,ou=people,dc=redhat,dc=local
+
+    dn: cn=manager,ou=groups,dc=redhat,dc=local
+    objectClass: groupOfUniqueNames
+    objectClass: top
+    cn: manager
+    uniqueMember: cn=myuser,ou=people,dc=redhat,dc=local

@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: openldap
+  labels:
+    app: openldap
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: openldap
+  template:
+    metadata:
+      labels:
+        app: openldap
+    spec:
+      containers:
+        - name: openldap
+          image: osixia/openldap
+          args:
+            - --copy-service
+          ports:
+            - containerPort: 389
+              name: ldap
+            - containerPort: 636
+              name: ldaps
+          env:
+            - name: LDAP_DOMAIN
+              value: redhat.local
+            - name: LDAP_TLS_CRT_FILENAME
+              value: ldap.pem
+            - name: LDAP_TLS_KEY_FILENAME
+              value: ldap.key.decrypted
+            - name: LDAP_TLS_CA_CRT_FILENAME
+              value: ca.pem
+            - name: LDAP_TLS_VERIFY_CLIENT
+              value: "try"
+          volumeMounts:
+            - name: tls-certs
+              mountPath: /container/service/slapd/assets/certs
+              readOnly: true
+            - name: ldif-bootstrap
+              mountPath: /container/service/slapd/assets/config/bootstrap/ldif/custom/50-bootstrap.ldif
+              subPath: 50-bootstrap.ldif
+              readOnly: true
+      volumes:
+        - name: tls-certs
+          secret:
+            secretName: openldap-tls
+        - name: ldif-bootstrap
+          configMap:
+            name: openldap-ldif
