@@ -6,14 +6,16 @@
 Use the "ca" project to initialize a new CA, Issuing CA, and broker certs:
 
 ```
-./scripts/kafka-get.sh --kafka-version=3.9.0
+export KAFKA_VERSION=4.3.1
+../scripts/kafka-get.sh --kafka-version=$KAFKA_VERSION
+export KAFKA_DIR=/tmp/kafka-$KAFKA_VERSION
 ```
 
 ```
 mkdir /tmp/ca-data
-../../ca/scripts/create.sh
-../../ca/scripts/cert-server.sh --cn=myserver --subject-alt-name="IP:127.0.0.1,DNS:localhost"
-../../ca/scripts/cert-client.sh --cn=admin
+../../../ca/scripts/create.sh
+../../../ca/scripts/cert-server.sh --cn=myserver --subject-alt-name="IP:127.0.0.1,DNS:localhost"
+../../../ca/scripts/cert-client.sh --cn=admin
 ```
 
 Create truststore, client auth pkcs12, server pkc12:
@@ -55,10 +57,10 @@ $KAFKA_DIR/bin/kafka-acls.sh --bootstrap-server 127.0.0.1:11090 --add --allow-pr
 
 ```
 $KAFKA_DIR/bin/kafka-topics.sh --bootstrap-server 127.0.0.1:11090  --create --topic foo --partitions 3 --replication-factor 3 --command-config ./config/kraft-tls-sasl/alice.properties
-$KAFKA_DIR/bin/kafka-console-producer.sh --bootstrap-server=127.0.0.1:11090,127.0.0.1:11091,127.0.0.1:11092 --producer.config ./config/kraft-tls-sasl/alice.properties --topic foo
+$KAFKA_DIR/bin/kafka-console-producer.sh --bootstrap-server=127.0.0.1:11090,127.0.0.1:11091,127.0.0.1:11092 --command-config ./config/kraft-tls-sasl/alice.properties --topic foo
 ```
 ```
-$KAFKA_DIR/bin/kafka-console-consumer.sh --bootstrap-server=127.0.0.1:11090,127.0.0.1:11091,127.0.0.1:11092 --consumer.config ./config/kraft-tls-sasl/alice.properties --topic foo --group foo-consumer-group --from-beginning
+$KAFKA_DIR/bin/kafka-console-consumer.sh --bootstrap-server=127.0.0.1:11090,127.0.0.1:11091,127.0.0.1:11092 --command-config ./config/kraft-tls-sasl/alice.properties --topic foo --group foo-consumer-group --from-beginning
 ```
 
 ## Shut down

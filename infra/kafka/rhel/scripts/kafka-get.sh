@@ -41,8 +41,7 @@ fi
 
 echo "start of script..."
 
-# from https://github.com/fvaleri/strimzi-debugging/blob/main/init.sh
-for x in curl xz java; do
+for x in curl tar java; do
   if ! command -v "$x" &>/dev/null; then
     echo "Missing required utility: $x"; exit 1
   fi
@@ -51,11 +50,24 @@ done
 # get Kafka
 KAFKA_HOME="/tmp/kafka-$KAFKA_VERSION" && export KAFKA_HOME
 if [[ ! -d $KAFKA_HOME ]]; then
+  CDN_URL="https://dlcdn.apache.org/kafka/$KAFKA_VERSION/kafka_2.13-$KAFKA_VERSION.tgz"
+  ARCHIVE_URL="https://archive.apache.org/dist/kafka/$KAFKA_VERSION/kafka_2.13-$KAFKA_VERSION.tgz"
+
   echo "Downloading Kafka to $KAFKA_HOME"
   mkdir -p "$KAFKA_HOME"
-  curl -sLk "https://dlcdn.apache.org/kafka/$KAFKA_VERSION/kafka_2.13-$KAFKA_VERSION.tgz" | tar xz -C "$KAFKA_HOME" --strip-components 1
-#https://dlcdn.apache.org/kafka/3.9.1/kafka_2.13-3.9.1.tgz
-fi
 
+  HTTP_CODE=$(curl -sL -o /dev/null -w "%{http_code}" "$CDN_URL")
+  if [[ "$HTTP_CODE" == "200" ]]; then
+    DOWNLOAD_URL="$CDN_URL"
+  else
+    echo "Not found on CDN, trying archive..."
+    DOWNLOAD_URL="$ARCHIVE_URL"
+  fi
+
+  if ! curl -sLk "$DOWNLOAD_URL" | tar xz -C "$KAFKA_HOME" --strip-components 1; then
+    rm -rf "$KAFKA_HOME"
+    error "Failed to download Kafka $KAFKA_VERSION"
+  fi
+fi
 
 echo "end of script"

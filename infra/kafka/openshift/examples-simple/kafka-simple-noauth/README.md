@@ -10,7 +10,7 @@ Example of a basic config with SCRAM-SHA-512 authentication and authorization to
 ## Install operator
 
 ```
-oc create -f ../subscription.yaml 
+oc create -f ../../subscription.yaml 
 ```
 
 ## Create KafkaNodePools, Kafka broker, Kafka User, and Kafka Topic

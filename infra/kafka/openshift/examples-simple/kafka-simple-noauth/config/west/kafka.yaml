@@ -11,7 +11,7 @@ spec:
       - name: internal
         port: 9092
         type: internal
-        tls: true
+        tls: false
     config:
       offsets.topic.replication.factor: 3
       transaction.state.log.replication.factor: 3

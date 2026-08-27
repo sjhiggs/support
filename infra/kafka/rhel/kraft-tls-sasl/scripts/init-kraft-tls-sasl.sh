@@ -2,7 +2,8 @@
 
 cd "$(dirname "$0")"
 
-export KAFKA_DIR=/tmp/kafka-3.9.0
+KAFKA_VERSION=${KAFKA_VERSION:-4.3.1}
+export KAFKA_DIR=/tmp/kafka-$KAFKA_VERSION
 
 eval rm -rf /tmp/controller-{0..5}
 eval rm -rf /tmp/kafka-{0..5}
