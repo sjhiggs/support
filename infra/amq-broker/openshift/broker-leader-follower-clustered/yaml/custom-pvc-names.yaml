@@ -1,0 +1,46 @@
+---
+# Pre-create PVCs with custom naming prefix "myvol"
+# Pattern: myvol-broker-ss-{ordinal}
+# This matches the extraVolumeClaimTemplates pattern
+
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: myvol-broker-ss-0
+  labels:
+    app: broker-app
+spec:
+  accessModes:
+  - ReadWriteMany  # RWX for leader-follower sharing
+  resources:
+    requests:
+      storage: 1Gi
+  storageClassName: crc-csi-hostpath-provisioner
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: myvol-broker-ss-1
+  labels:
+    app: broker-app
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+  storageClassName: crc-csi-hostpath-provisioner
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: myvol-broker-ss-2
+  labels:
+    app: broker-app
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+  storageClassName: crc-csi-hostpath-provisioner

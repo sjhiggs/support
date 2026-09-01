@@ -1,0 +1,43 @@
+apiVersion: broker.amq.io/v1beta1
+kind: ActiveMQArtemis
+metadata:
+  name: broker
+spec:
+  console:
+    expose: true
+  # Environment variables for cluster discovery
+  env:
+    - name: PING_SVC_NAME
+      value: broker-ping-svc
+  deploymentPlan:
+    size: 3
+    persistenceEnabled: false
+    # Labels for ping service selector
+    labels:
+      ha-cluster: broker-shared-store
+    extraVolumeClaimTemplates:
+      - metadata:
+          name: myvol
+        spec:
+          accessModes:
+            - ReadWriteOnce
+          resources:
+            requests:
+              storage: 1Gi
+          storageClassName: crc-csi-hostpath-provisioner
+    extraVolumeMounts:
+      - name: myvol
+        mountPath: /opt/amq/data
+  # Configure broker-ss-0 as shared-store primary (leader)
+  # Note: This applies to all 3 brokers, but only broker-ss-0 has RWX storage for follower
+  brokerProperties:
+    # Shared-store primary configuration (for broker-ss-0)
+    - "HAPolicyConfiguration=SHARED_STORE_PRIMARY"
+    - "HAPolicyConfiguration.failbackDelay=0"
+    - "HAPolicyConfiguration.failoverOnServerShutdown=true"
+    - "HAPolicyConfiguration.waitForActivation=true"
+    # Data directories on shared storage
+    - "journalDirectory=/opt/amq/data/journal"
+    - "pagingDirectory=/opt/amq/data/paging"
+    - "bindingsDirectory=/opt/amq/data/bindings"
+    - "largeMessagesDirectory=/opt/amq/data/largemessages"

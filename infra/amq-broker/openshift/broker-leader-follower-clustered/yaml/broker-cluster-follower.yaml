@@ -1,0 +1,49 @@
+apiVersion: broker.amq.io/v1beta1
+kind: ActiveMQArtemis
+metadata:
+  name: broker-cluster-follower
+spec:
+  console:
+    expose: true
+  # Environment variables for cluster discovery and credentials
+  env:
+    - name: PING_SVC_NAME
+      value: broker-ping-svc
+    # Reuse primary broker's cluster credentials for authentication
+    - name: AMQ_CLUSTER_USER
+      valueFrom:
+        secretKeyRef:
+          name: broker-credentials-secret
+          key: AMQ_CLUSTER_USER
+    - name: AMQ_CLUSTER_PASSWORD
+      valueFrom:
+        secretKeyRef:
+          name: broker-credentials-secret
+          key: AMQ_CLUSTER_PASSWORD
+  deploymentPlan:
+    size: 1
+    # Disable operator-managed persistence - share PVC with leader
+    persistenceEnabled: false
+    # Labels for ping service selector
+    labels:
+      ha-cluster: broker-shared-store
+    # Share the myvol-broker-ss-0 PVC with broker-ss-0 (leader)
+    extraVolumes:
+      - name: broker-data
+        persistentVolumeClaim:
+          claimName: myvol-broker-ss-0  # Same PVC as broker-ss-0!
+    extraVolumeMounts:
+      - name: broker-data
+        mountPath: /opt/amq/data
+  # Configure as shared-store backup (follower)
+  brokerProperties:
+    # Shared-store backup configuration
+    - "HAPolicyConfiguration=SHARED_STORE_BACKUP"
+    # Data directories (same as leader - on shared storage)
+    - "journalDirectory=/opt/amq/data/journal"
+    - "pagingDirectory=/opt/amq/data/paging"
+    - "bindingsDirectory=/opt/amq/data/bindings"
+    - "largeMessagesDirectory=/opt/amq/data/largemessages"
+    # Backup policy - activates on primary crash only (failover-on-shutdown not supported in AMQ 7.13)
+    - "HAPolicyConfiguration.allowFailBack=true"
+    - "HAPolicyConfiguration.restartBackup=true"
