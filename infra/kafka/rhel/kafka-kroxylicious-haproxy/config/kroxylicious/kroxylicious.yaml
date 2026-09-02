@@ -1,0 +1,10 @@
+virtualClusters:
+  - name: demo
+    targetCluster:
+      bootstrapServers: kafka-0:9092,kafka-1:9093,kafka-2:9094
+    gateways:
+      - name: mygateway
+        portIdentifiesNode:
+          bootstrapAddress: proxy.local:9095
+          advertisedBrokerAddressPattern: proxy.local
+          nodeStartPort: 9096
