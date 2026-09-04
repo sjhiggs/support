@@ -1,0 +1,107 @@
+<?xml version='1.0'?>
+<configuration xmlns="urn:activemq"
+               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+               xsi:schemaLocation="urn:activemq /schema/artemis-configuration.xsd">
+
+   <core xmlns="urn:activemq:core" xsi:schemaLocation="urn:activemq:core ">
+
+      <name>broker1</name>
+
+      <persistence-enabled>true</persistence-enabled>
+
+      <paging-directory>/tmp/broker1-data/paging</paging-directory>
+      <bindings-directory>/tmp/broker1-data/bindings</bindings-directory>
+      <journal-directory>/tmp/broker1-data/journal</journal-directory>
+      <large-messages-directory>/tmp/broker1-data/large-messages</large-messages-directory>
+
+      <journal-type>ASYNCIO</journal-type>
+      <journal-datasync>true</journal-datasync>
+      <journal-min-files>2</journal-min-files>
+      <journal-pool-files>10</journal-pool-files>
+
+      <disk-scan-period>5000</disk-scan-period>
+      <max-disk-usage>90</max-disk-usage>
+
+      <global-max-messages>-1</global-max-messages>
+
+      <cluster-user>cluster-user</cluster-user>
+      <cluster-password>cluster-password</cluster-password>
+
+      <connectors>
+         <connector name="broker1-connector">tcp://localhost:61616</connector>
+         <connector name="broker2-connector">tcp://localhost:61617</connector>
+      </connectors>
+
+      <acceptors>
+         <acceptor name="artemis">tcp://0.0.0.0:61616?tcpSendBufferSize=1048576;tcpReceiveBufferSize=1048576;protocols=CORE,AMQP,STOMP,MQTT,OPENWIRE;useEpoll=true</acceptor>
+      </acceptors>
+
+      <cluster-connections>
+         <cluster-connection name="live-cluster">
+            <connector-ref>broker1-connector</connector-ref>
+            <message-load-balancing>ON_DEMAND</message-load-balancing>
+            <max-hops>1</max-hops>
+            <static-connectors>
+               <connector-ref>broker2-connector</connector-ref>
+            </static-connectors>
+         </cluster-connection>
+      </cluster-connections>
+
+      <security-settings>
+         <security-setting match="#">
+            <permission type="createNonDurableQueue" roles="amq"/>
+            <permission type="deleteNonDurableQueue" roles="amq"/>
+            <permission type="createDurableQueue" roles="amq"/>
+            <permission type="deleteDurableQueue" roles="amq"/>
+            <permission type="createAddress" roles="amq"/>
+            <permission type="deleteAddress" roles="amq"/>
+            <permission type="consume" roles="amq"/>
+            <permission type="browse" roles="amq"/>
+            <permission type="send" roles="amq"/>
+            <permission type="manage" roles="amq"/>
+         </security-setting>
+      </security-settings>
+
+      <address-settings>
+         <address-setting match="#">
+            <dead-letter-address>DLQ</dead-letter-address>
+            <expiry-address>ExpiryQueue</expiry-address>
+            <redelivery-delay>0</redelivery-delay>
+            <max-delivery-attempts>10</max-delivery-attempts>
+            <max-size-bytes>-1</max-size-bytes>
+            <max-size-bytes-reject-threshold>-1</max-size-bytes-reject-threshold>
+            <page-size-bytes>10M</page-size-bytes>
+            <page-max-cache-size>5</page-max-cache-size>
+            <address-full-policy>PAGE</address-full-policy>
+            <message-counter-history-day-limit>10</message-counter-history-day-limit>
+            <auto-create-queues>true</auto-create-queues>
+            <auto-create-addresses>true</auto-create-addresses>
+            <auto-delete-queues>false</auto-delete-queues>
+            <auto-delete-addresses>false</auto-delete-addresses>
+            <auto-delete-queues-delay>0</auto-delete-queues-delay>
+            <auto-delete-addresses-delay>0</auto-delete-addresses-delay>
+            <config-delete-queues>OFF</config-delete-queues>
+            <config-delete-addresses>OFF</config-delete-addresses>
+            <default-purge-on-no-consumers>false</default-purge-on-no-consumers>
+            <default-max-consumers>-1</default-max-consumers>
+            <default-queue-routing-type>ANYCAST</default-queue-routing-type>
+            <default-address-routing-type>ANYCAST</default-address-routing-type>
+            <redistribution-delay>0</redistribution-delay>
+         </address-setting>
+      </address-settings>
+
+      <addresses>
+         <address name="DLQ">
+            <anycast>
+               <queue name="DLQ" />
+            </anycast>
+         </address>
+         <address name="ExpiryQueue">
+            <anycast>
+               <queue name="ExpiryQueue" />
+            </anycast>
+         </address>
+      </addresses>
+
+   </core>
+</configuration>
