@@ -1,0 +1,28 @@
+{
+  "name": "oracle-inventory-connector",
+  "config": {
+    "connector.class": "io.debezium.connector.oracle.OracleConnector",
+    "tasks.max": "1",
+    "topic.prefix": "oracle",
+    "database.hostname": "oracle",
+    "database.port": "1521",
+    "database.user": "c##dbzuser",
+    "database.password": "dbz",
+    "database.dbname": "XE",
+    "database.pdb.name": "XEPDB1",
+    "schema.include.list": "DEBEZIUM",
+    "table.include.list": "DEBEZIUM.PRODUCTS,DEBEZIUM.PRODUCTS_ON_HAND,DEBEZIUM.CUSTOMERS,DEBEZIUM.ORDERS",
+    "schema.history.internal.kafka.bootstrap.servers": "kafka-0:9092,kafka-1:9093,kafka-2:9094",
+    "schema.history.internal.kafka.topic": "schema-changes.inventory",
+    "database.connection.adapter": "logminer",
+    "log.mining.strategy": "online_catalog",
+    "log.mining.continuous.mine": "false",
+    "log.mining.archive.log.only.mode": "false",
+    "log.mining.archive.log.hours": "0",
+    "snapshot.mode": "initial",
+    "decimal.handling.mode": "double",
+    "time.precision.mode": "connect",
+    "tombstones.on.delete": "true",
+    "provide.transaction.metadata": "false"
+  }
+}
