@@ -1,0 +1,23 @@
+{
+  "name": "mm2-checkpoint-a-to-b",
+  "config": {
+    "connector.class": "org.apache.kafka.connect.mirror.MirrorCheckpointConnector",
+    "source.cluster.alias": "A",
+    "target.cluster.alias": "B",
+    "source.cluster.bootstrap.servers": "kafka-a-0:9092,kafka-a-1:9092,kafka-a-2:9092",
+    "target.cluster.bootstrap.servers": "kafka-b-0:9092,kafka-b-1:9092,kafka-b-2:9092",
+    "groups": ".*",
+    "groups.exclude": "console-consumer-.*,connect-.*,__.*",
+    "replication.policy.class": "org.apache.kafka.connect.mirror.IdentityReplicationPolicy",
+    "sync.group.offsets.enabled": "true",
+    "sync.group.offsets.interval.seconds": "60",
+    "emit.checkpoints.enabled": "true",
+    "emit.checkpoints.interval.seconds": "60",
+    "checkpoints.topic.replication.factor": "3",
+    "refresh.groups.enabled": "true",
+    "refresh.groups.interval.seconds": "10",
+    "key.converter": "org.apache.kafka.connect.converters.ByteArrayConverter",
+    "value.converter": "org.apache.kafka.connect.converters.ByteArrayConverter",
+    "tasks.max": "1"
+  }
+}

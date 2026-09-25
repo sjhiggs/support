@@ -1,0 +1,30 @@
+{
+  "name": "mm2-source-b-to-a",
+  "config": {
+    "connector.class": "org.apache.kafka.connect.mirror.MirrorSourceConnector",
+    "source.cluster.alias": "B",
+    "target.cluster.alias": "A",
+    "source.cluster.bootstrap.servers": "kafka-b-0:9092,kafka-b-1:9092,kafka-b-2:9092",
+    "target.cluster.bootstrap.servers": "kafka-a-0:9092,kafka-a-1:9092,kafka-a-2:9092",
+    "topics": ".*",
+    "topics.exclude": "mm2-.*\\.internal,.*\\.replica,__.*",
+    "groups": ".*",
+    "groups.exclude": "console-consumer-.*,connect-.*,__.*",
+    "replication.policy.class": "org.apache.kafka.connect.mirror.IdentityReplicationPolicy",
+    "sync.topic.configs.enabled": "true",
+    "sync.topic.acls.enabled": "false",
+    "emit.heartbeats.enabled": "true",
+    "emit.checkpoints.enabled": "true",
+    "refresh.topics.enabled": "true",
+    "refresh.topics.interval.seconds": "10",
+    "replication.factor": "3",
+    "checkpoints.topic.replication.factor": "3",
+    "heartbeats.topic.replication.factor": "3",
+    "offset-syncs.topic.replication.factor": "3",
+    "offset-syncs.topic.location": "source",
+    "task.assigned.partitions": "100",
+    "tasks.max": "1",
+    "key.converter": "org.apache.kafka.connect.converters.ByteArrayConverter",
+    "value.converter": "org.apache.kafka.connect.converters.ByteArrayConverter"
+  }
+}

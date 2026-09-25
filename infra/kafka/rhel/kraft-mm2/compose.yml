@@ -1,0 +1,195 @@
+# Podman/Docker Compose file for KRaft MM2 Setup
+#
+# Two 3-node Kafka clusters (A and B) + MirrorMaker 2
+#
+# Usage:
+#   podman-compose up -d    (recommended for RHEL/Fedora)
+#   docker-compose up -d    (alternative)
+
+# ========================================
+# YAML Anchors for Common Configurations
+# ========================================
+
+x-kafka-common: &kafka-common
+  image: apache/kafka:latest
+  restart: unless-stopped
+
+# Health check template for Kafka brokers (each broker overrides hostname)
+x-kafka-healthcheck-base: &kafka-healthcheck-base
+  interval: 10s
+  timeout: 10s
+  retries: 5
+  start_period: 30s
+
+# Common environment variables for ALL Kafka brokers
+x-kafka-base-env: &kafka-base-env
+  KAFKA_PROCESS_ROLES: broker,controller
+  KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+  KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+  KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+  KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
+  KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 3
+  KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 2
+  KAFKA_NUM_PARTITIONS: 10
+  KAFKA_DEFAULT_REPLICATION_FACTOR: 3
+  KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 5000
+  KAFKA_GROUP_MIN_SESSION_TIMEOUT_MS: 6000
+  KAFKA_GROUP_MAX_SESSION_TIMEOUT_MS: 300000
+
+# Cluster A specific environment
+x-kafka-cluster-a-env: &kafka-cluster-a-env
+  <<: *kafka-base-env
+  KAFKA_CONTROLLER_QUORUM_VOTERS: 0@kafka-a-0:19092,1@kafka-a-1:19092,2@kafka-a-2:19092
+  CLUSTER_ID: ClusterA-KRaft-MM2-000001
+
+# Cluster B specific environment
+x-kafka-cluster-b-env: &kafka-cluster-b-env
+  <<: *kafka-base-env
+  KAFKA_CONTROLLER_QUORUM_VOTERS: 0@kafka-b-0:19092,1@kafka-b-1:19092,2@kafka-b-2:19092
+  CLUSTER_ID: ClusterB-KRaft-MM2-000002
+
+services:
+  # ========================================
+  # Cluster A - 3 Nodes
+  # ========================================
+
+  kafka-a-0:
+    <<: *kafka-common
+    container_name: kafka-a-0
+    environment:
+      <<: *kafka-cluster-a-env
+      KAFKA_NODE_ID: 0
+      KAFKA_LISTENERS: CONTROLLER://kafka-a-0:19092,PLAINTEXT://kafka-a-0:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka-a-0:9092
+    volumes:
+      - kafka-a-0-data:/var/lib/kafka/data
+    ports:
+      - "9090:9092"
+    healthcheck:
+      <<: *kafka-healthcheck-base
+      test: ["CMD-SHELL", "bash -c 'printf \"\" > /dev/tcp/kafka-a-0/9092' || exit 1"]
+
+  kafka-a-1:
+    <<: *kafka-common
+    container_name: kafka-a-1
+    environment:
+      <<: *kafka-cluster-a-env
+      KAFKA_NODE_ID: 1
+      KAFKA_LISTENERS: CONTROLLER://kafka-a-1:19092,PLAINTEXT://kafka-a-1:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka-a-1:9092
+    volumes:
+      - kafka-a-1-data:/var/lib/kafka/data
+    ports:
+      - "9091:9092"
+    healthcheck:
+      <<: *kafka-healthcheck-base
+      test: ["CMD-SHELL", "bash -c 'printf \"\" > /dev/tcp/kafka-a-1/9092' || exit 1"]
+
+  kafka-a-2:
+    <<: *kafka-common
+    container_name: kafka-a-2
+    environment:
+      <<: *kafka-cluster-a-env
+      KAFKA_NODE_ID: 2
+      KAFKA_LISTENERS: CONTROLLER://kafka-a-2:19092,PLAINTEXT://kafka-a-2:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka-a-2:9092
+    volumes:
+      - kafka-a-2-data:/var/lib/kafka/data
+    ports:
+      - "9092:9092"
+    healthcheck:
+      <<: *kafka-healthcheck-base
+      test: ["CMD-SHELL", "bash -c 'printf \"\" > /dev/tcp/kafka-a-2/9092' || exit 1"]
+
+  # ========================================
+  # Cluster B - 3 Nodes
+  # ========================================
+
+  kafka-b-0:
+    <<: *kafka-common
+    container_name: kafka-b-0
+    environment:
+      <<: *kafka-cluster-b-env
+      KAFKA_NODE_ID: 0
+      KAFKA_LISTENERS: CONTROLLER://kafka-b-0:19092,PLAINTEXT://kafka-b-0:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka-b-0:9092
+    volumes:
+      - kafka-b-0-data:/var/lib/kafka/data
+    ports:
+      - "9093:9092"
+    healthcheck:
+      <<: *kafka-healthcheck-base
+      test: ["CMD-SHELL", "bash -c 'printf \"\" > /dev/tcp/kafka-b-0/9092' || exit 1"]
+
+  kafka-b-1:
+    <<: *kafka-common
+    container_name: kafka-b-1
+    environment:
+      <<: *kafka-cluster-b-env
+      KAFKA_NODE_ID: 1
+      KAFKA_LISTENERS: CONTROLLER://kafka-b-1:19092,PLAINTEXT://kafka-b-1:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka-b-1:9092
+    volumes:
+      - kafka-b-1-data:/var/lib/kafka/data
+    ports:
+      - "9094:9092"
+    healthcheck:
+      <<: *kafka-healthcheck-base
+      test: ["CMD-SHELL", "bash -c 'printf \"\" > /dev/tcp/kafka-b-1/9092' || exit 1"]
+
+  kafka-b-2:
+    <<: *kafka-common
+    container_name: kafka-b-2
+    environment:
+      <<: *kafka-cluster-b-env
+      KAFKA_NODE_ID: 2
+      KAFKA_LISTENERS: CONTROLLER://kafka-b-2:19092,PLAINTEXT://kafka-b-2:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka-b-2:9092
+    volumes:
+      - kafka-b-2-data:/var/lib/kafka/data
+    ports:
+      - "9095:9092"
+    healthcheck:
+      <<: *kafka-healthcheck-base
+      test: ["CMD-SHELL", "bash -c 'printf \"\" > /dev/tcp/kafka-b-2/9092' || exit 1"]
+
+  # ========================================
+  # MirrorMaker 2 (Kafka Connect - Distributed Mode)
+  # ========================================
+
+  mm2-0:
+    image: apache/kafka:latest
+    container_name: mm2-0
+    hostname: mm2-0
+    command: /opt/kafka/bin/connect-distributed.sh /config/connect-distributed.properties
+    volumes:
+      - ./config:/config:ro
+    depends_on:
+      kafka-a-0:
+        condition: service_healthy
+      kafka-a-1:
+        condition: service_healthy
+      kafka-a-2:
+        condition: service_healthy
+      kafka-b-0:
+        condition: service_healthy
+      kafka-b-1:
+        condition: service_healthy
+      kafka-b-2:
+        condition: service_healthy
+    ports:
+      - "8083:8083"
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c 'printf \"\" > /dev/tcp/localhost/8083' || exit 1"]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+      start_period: 45s
+
+volumes:
+  kafka-a-0-data:
+  kafka-a-1-data:
+  kafka-a-2-data:
+  kafka-b-0-data:
+  kafka-b-1-data:
+  kafka-b-2-data:
