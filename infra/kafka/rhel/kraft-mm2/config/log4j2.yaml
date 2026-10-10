@@ -1,0 +1,125 @@
+Configuration:
+  name: KafkaConnectLog4j2
+
+  Properties:
+    Property:
+      - name: kafka.logs.dir
+        value: /var/log/kafka-connect
+      - name: log.file.prefix
+        value: connect
+
+  Appenders:
+    # Console appender for stdout
+    Console:
+      name: Console
+      target: SYSTEM_OUT
+      PatternLayout:
+        pattern: "[%d{ISO8601}] %p %c{1}:%L - %m%n"
+
+    # Rolling file appender for general logs
+    RollingFile:
+      - name: RollingFileAppender
+        fileName: ${kafka.logs.dir}/${log.file.prefix}.log
+        filePattern: ${kafka.logs.dir}/${log.file.prefix}.log.%d{yyyy-MM-dd-HH}
+        PatternLayout:
+          pattern: "[%d{ISO8601}] %p %c{1}:%L - %m%n"
+        Policies:
+          TimeBasedTriggeringPolicy:
+            interval: 1
+            modulate: true
+          SizeBasedTriggeringPolicy:
+            size: 100MB
+        DefaultRolloverStrategy:
+          max: 168
+
+      # Separate file for MirrorMaker 2 specific logs
+      - name: MirrorMakerAppender
+        fileName: ${kafka.logs.dir}/mirrormaker.log
+        filePattern: ${kafka.logs.dir}/mirrormaker.log.%d{yyyy-MM-dd-HH}
+        PatternLayout:
+          pattern: "[%d{ISO8601}] %p %c{1}:%L - %m%n"
+        Policies:
+          TimeBasedTriggeringPolicy:
+            interval: 1
+            modulate: true
+          SizeBasedTriggeringPolicy:
+            size: 100MB
+        DefaultRolloverStrategy:
+          max: 168
+
+      # Separate file for errors
+      - name: ErrorFileAppender
+        fileName: ${kafka.logs.dir}/${log.file.prefix}-error.log
+        filePattern: ${kafka.logs.dir}/${log.file.prefix}-error.log.%d{yyyy-MM-dd}
+        PatternLayout:
+          pattern: "[%d{ISO8601}] %p %c:%L - %m%n"
+        Policies:
+          TimeBasedTriggeringPolicy:
+            interval: 1
+            modulate: true
+        DefaultRolloverStrategy:
+          max: 30
+        Filters:
+          ThresholdFilter:
+            level: ERROR
+            onMatch: ACCEPT
+            onMismatch: DENY
+
+  Loggers:
+    # MirrorMaker 2 specific loggers
+    Logger:
+      - name: org.apache.kafka.connect.mirror
+        level: INFO
+        additivity: false
+        AppenderRef:
+          - ref: Console
+          - ref: MirrorMakerAppender
+          - ref: ErrorFileAppender
+
+      # Kafka Connect framework
+      - name: org.apache.kafka.connect
+        level: INFO
+        additivity: false
+        AppenderRef:
+          - ref: Console
+          - ref: RollingFileAppender
+          - ref: ErrorFileAppender
+
+      # Kafka clients (producer/consumer used by Connect)
+      - name: org.apache.kafka.clients
+        level: WARN
+        additivity: false
+        AppenderRef:
+          - ref: Console
+          - ref: RollingFileAppender
+
+      # Kafka common
+      - name: org.apache.kafka.common
+        level: WARN
+        additivity: false
+        AppenderRef:
+          - ref: Console
+          - ref: RollingFileAppender
+
+      # Reduce noise from state change logs
+      - name: org.apache.kafka.connect.runtime.WorkerSourceTask
+        level: WARN
+        additivity: false
+        AppenderRef:
+          - ref: Console
+          - ref: RollingFileAppender
+
+      - name: org.apache.kafka.connect.runtime.WorkerSinkTask
+        level: WARN
+        additivity: false
+        AppenderRef:
+          - ref: Console
+          - ref: RollingFileAppender
+
+    # Root logger
+    Root:
+      level: INFO
+      AppenderRef:
+        - ref: Console
+        - ref: RollingFileAppender
+        - ref: ErrorFileAppender
