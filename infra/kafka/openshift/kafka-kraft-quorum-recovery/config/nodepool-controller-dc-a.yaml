@@ -1,0 +1,27 @@
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaNodePool
+metadata:
+  name: controller-dc-a
+  labels:
+    strimzi.io/cluster: multidc
+    datacenter: dc-a
+spec:
+  replicas: 2
+  roles:
+    - controller
+  storage:
+    type: jbod
+    volumes:
+      - id: 0
+        type: persistent-claim
+        size: 1Gi
+        kraftMetadata: shared
+        deleteClaim: false
+  template:
+    pod:
+      metadata:
+        labels:
+          datacenter: dc-a
+        annotations:
+          # Simulate datacenter A
+          topology.kubernetes.io/zone: dc-a
